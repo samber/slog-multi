@@ -43,7 +43,7 @@ import (
 )
 
 func main() {
-    logstash, _ := net.Dial("tcp", "logstash.acme:4242")
+    logstash, _ := net.Dial("tcp", "logstash.acme:4242")    // use github.com/netbrain/goautosocket for auto-reconnect
     stderr := os.Stderr
 
     logger := slog.New(slogmulti.NewMultiHandler(

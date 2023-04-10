@@ -17,8 +17,14 @@ func NewMultiHandler(handlers ...slog.Handler) slog.Handler {
 	}
 }
 
-func (h *MultiHandler) Enabled(_ context.Context, l slog.Level) bool {
-	return true
+func (h *MultiHandler) Enabled(ctx context.Context, l slog.Level) bool {
+	for i := range h.handlers {
+		if h.handlers[i].Enabled(ctx, l) {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (h *MultiHandler) Handle(ctx context.Context, r slog.Record) error {
