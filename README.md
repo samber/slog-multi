@@ -11,8 +11,8 @@
 [![License](https://img.shields.io/github/license/samber/slog-multi)](./LICENSE)
 
 Design workflows of [slog](https://pkg.go.dev/golang.org/x/exp/slog) handlers:
-- fanout: distribute `log.Record` to multiple `slog.Handler` in parallel
-- pipelining: rewrite `log.Record` on the fly (eg: for privacy reason)
+- **fanout**: distribute `log.Record` to multiple `slog.Handler` in parallel
+- **pipelining**: rewrite `log.Record` on the fly (eg: for privacy reason)
 
 ![workflow example](./images/workflow.png)
 

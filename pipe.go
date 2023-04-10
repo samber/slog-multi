@@ -6,7 +6,6 @@ import (
 
 type PipeBuilder struct {
 	middlewares []Middleware
-	handler     *PipeBuilder
 }
 
 func Pipe(middlewares ...Middleware) *PipeBuilder {
