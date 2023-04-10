@@ -22,7 +22,7 @@ Design workflows of [slog](https://pkg.go.dev/golang.org/x/exp/slog) handlers:
 go get github.com/samber/slog-multi
 ```
 
-**Compatibility**: go >= 1.20
+**Compatibility**: go >= 1.20.1
 
 This library is v0 and follows SemVer strictly. On `slog` final release (go 1.21), this library will go v1.
 
