@@ -30,10 +30,12 @@ func main() {
 	logstash := connectLogstash()
 	stderr := os.Stderr
 
-	logger := slog.New(slogmulti.NewMultiHandler(
-		slog.HandlerOptions{}.NewJSONHandler(logstash),
-		slog.HandlerOptions{}.NewTextHandler(stderr),
-	))
+	logger := slog.New(
+		slogmulti.NewMultiHandler(
+			slog.HandlerOptions{}.NewJSONHandler(logstash),
+			slog.HandlerOptions{}.NewTextHandler(stderr),
+		),
+	)
 
 	logger.
 		With(

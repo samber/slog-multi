@@ -7,17 +7,18 @@ import (
 	"golang.org/x/exp/slog"
 )
 
-type MultiHandler struct {
+// @TODO: implement round robin strategy ?
+type EitherHandler struct {
 	handlers []slog.Handler
 }
 
-func NewMultiHandler(handlers ...slog.Handler) slog.Handler {
-	return &MultiHandler{
+func Either(handlers ...slog.Handler) slog.Handler {
+	return &EitherHandler{
 		handlers: handlers,
 	}
 }
 
-func (h *MultiHandler) Enabled(ctx context.Context, l slog.Level) bool {
+func (h *EitherHandler) Enabled(ctx context.Context, l slog.Level) bool {
 	for i := range h.handlers {
 		if h.handlers[i].Enabled(ctx, l) {
 			return true
@@ -27,32 +28,33 @@ func (h *MultiHandler) Enabled(ctx context.Context, l slog.Level) bool {
 	return false
 }
 
-// @TODO: return multiple errors ?
-func (h *MultiHandler) Handle(ctx context.Context, r slog.Record) error {
+func (h *EitherHandler) Handle(ctx context.Context, r slog.Record) error {
+	var err error
+
 	for i := range h.handlers {
 		if h.handlers[i].Enabled(ctx, r.Level) {
-			err := try(func() error {
+			err = try(func() error {
 				return h.handlers[i].Handle(ctx, r.Clone())
 			})
-			if err != nil {
-				return err
+			if err == nil {
+				return nil
 			}
 		}
 	}
 
-	return nil
+	return err
 }
 
-func (h *MultiHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+func (h *EitherHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	handers := lo.Map(h.handlers, func(h slog.Handler, _ int) slog.Handler {
 		return h.WithAttrs(attrs)
 	})
-	return NewMultiHandler(handers...)
+	return Either(handers...)
 }
 
-func (h *MultiHandler) WithGroup(name string) slog.Handler {
+func (h *EitherHandler) WithGroup(name string) slog.Handler {
 	handers := lo.Map(h.handlers, func(h slog.Handler, _ int) slog.Handler {
 		return h.WithGroup(name)
 	})
-	return NewMultiHandler(handers...)
+	return Either(handers...)
 }

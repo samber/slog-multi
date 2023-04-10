@@ -1,5 +1,5 @@
 
-# slog: handler chaining and broadcasting
+# slog: Handler chain, fanout, fallback...
 
 [![tag](https://img.shields.io/github/tag/samber/slog-multi.svg)](https://github.com/samber/slog-multi/releases)
 ![Go Version](https://img.shields.io/badge/Go-%3E%3D%201.20.1-%23007d9c)
@@ -12,9 +12,12 @@
 
 Design workflows of [slog](https://pkg.go.dev/golang.org/x/exp/slog) handlers:
 - **fanout**: distribute `log.Record` to multiple `slog.Handler` in parallel
-- **pipelining**: rewrite `log.Record` on the fly (eg: for privacy reason)
+- **pipeline**: rewrite `log.Record` on the fly (eg: for privacy reason)
+- **fallback**: forward `log.Record` to the first available `slog.Handler`
 
-![workflow example](./images/workflow.png)
+Here a simple workflow with both pipeline and fanout:
+
+![workflow example with pipeline and fanout](./images/workflow.png)
 
 **See also:**
 
@@ -56,11 +59,13 @@ func main() {
     logstash, _ := net.Dial("tcp", "logstash.acme:4242")    // use github.com/netbrain/goautosocket for auto-reconnect
     stderr := os.Stderr
 
-    logger := slog.New(slogmulti.NewMultiHandler(
-        slog.HandlerOptions{}.NewJSONHandler(logstash),  // first handler: logstash over tcp
-        slog.HandlerOptions{}.NewTextHandler(stderr),    // second handler: stderr
-        // ...
-    ))
+    logger := slog.New(
+        slogmulti.NewMultiHandler(
+            slog.HandlerOptions{}.NewJSONHandler(logstash),  // first handler: logstash over tcp
+            slog.HandlerOptions{}.NewTextHandler(stderr),    // second handler: stderr
+            // ...
+        ),
+    )
 
     logger.
         With(
@@ -114,10 +119,10 @@ func main() {
 
     logger := slog.New(
         slogmulti.
-        Pipe(errorFormattingMiddleware).
-        Pipe(gdprMiddleware).
-        // ...
-        Handler(sink),
+            Pipe(errorFormattingMiddleware).
+            Pipe(gdprMiddleware).
+            // ...
+            Handler(sink),
     )
 
     logger.
@@ -230,6 +235,48 @@ mdw := slogmulti.NewInlineMiddleware(
         return next(name)
     },
 )
+```
+
+### Fallback: `slogmulti.Either()`
+
+List multiple targets for a `slog.Record` instead of retrying on the same unavailable log management system.
+
+```go
+import (
+	"net"
+    slogmulti "github.com/samber/slog-multi"
+    "golang.org/x/exp/slog"
+)
+
+func main() {
+	// ncat -l 1000 -k
+	// ncat -l 1001 -k
+	// ncat -l 1002 -k
+
+    // list AZs
+	logstash1, _ := net.Dial("tcp", "logstash.eu-west-3a.internal:1000")
+	logstash2, _ := net.Dial("tcp", "logstash.eu-west-3b.internal:1000")
+	logstash3, _ := net.Dial("tcp", "logstash.eu-west-3c.internal:1000")
+
+	logger := slog.New(
+		slogmulti.Either(
+			slog.HandlerOptions{}.NewJSONHandler(logstash1),    // send to this instance first
+			slog.HandlerOptions{}.NewJSONHandler(logstash2),    // then this instance in case of failure
+			slog.HandlerOptions{}.NewJSONHandler(logstash3),    // and finally this instance in case of double failure
+		),
+	)
+
+	logger.
+		With(
+			slog.Group("user",
+				slog.String("id", "user-123"),
+				slog.Time("created_at", time.Now().AddDate(0, 0, -1)),
+			),
+		).
+		With("environment", "dev").
+		With("error", fmt.Errorf("an error")).
+		Error("A message")
+}
 ```
 
 ## 🤝 Contributing
