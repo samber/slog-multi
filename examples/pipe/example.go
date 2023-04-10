@@ -30,7 +30,7 @@ func main() {
 			slog.Group("user",
 				slog.String("id", "user-123"),
 				slog.String("email", "user-123"),
-				slog.Time("created_at", time.Now().AddDate(0, 0, -1)),
+				slog.Time("created_at", time.Now()),
 			),
 		).
 		With("environment", "dev").
