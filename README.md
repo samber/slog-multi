@@ -23,7 +23,7 @@ Here a simple workflow with both pipeline and fanout:
 **See also:**
 
 - [slog-datadog](https://github.com/samber/slog-datadog): A `slog` handler for `Datadog`
-- [slog-logstach](https://github.com/samber/slog-logstach): A `slog` handler for `Logstach`
+- [slog-logstash](https://github.com/samber/slog-logstash): A `slog` handler for `Logstash`
 - [slog-slack](https://github.com/samber/slog-slack): A `slog` handler for `Slack`
 - [slog-loki](https://github.com/samber/slog-loki): A `slog` handler for `Loki`
 - [slog-sentry](https://github.com/samber/slog-sentry): A `slog` handler for `Sentry`
