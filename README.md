@@ -1,5 +1,5 @@
 
-# slog: Handler chain, fanout, failover...
+# slog: Handler chain, fanout, failover, load balancing...
 
 [![tag](https://img.shields.io/github/tag/samber/slog-multi.svg)](https://github.com/samber/slog-multi/releases)
 ![Go Version](https://img.shields.io/badge/Go-%3E%3D%201.20.1-%23007d9c)
@@ -14,6 +14,7 @@ Design workflows of [slog](https://pkg.go.dev/golang.org/x/exp/slog) handlers:
 - **fanout**: distribute `log.Record` to multiple `slog.Handler` in parallel
 - **pipeline**: rewrite `log.Record` on the fly (eg: for privacy reason)
 - **failover**: forward `log.Record` to the first available `slog.Handler`
+- **load balancing**: increase log bandwidth by sending `log.Record` to a pool of `slog.Handler`
 
 Here a simple workflow with both pipeline and fanout:
 
@@ -265,6 +266,50 @@ func main() {
 			slog.HandlerOptions{}.NewJSONHandler(logstash1),    // send to this instance first
 			slog.HandlerOptions{}.NewJSONHandler(logstash2),    // then this instance in case of failure
 			slog.HandlerOptions{}.NewJSONHandler(logstash3),    // and finally this instance in case of double failure
+		),
+	)
+
+	logger.
+		With(
+			slog.Group("user",
+				slog.String("id", "user-123"),
+				slog.Time("created_at", time.Now().AddDate(0, 0, -1)),
+			),
+		).
+		With("environment", "dev").
+		With("error", fmt.Errorf("an error")).
+		Error("A message")
+}
+```
+
+### Load balancing: `slogmulti.Pool()`
+
+Increase log bandwidth by sending `log.Record` to a pool of `slog.Handler`.
+
+```go
+import (
+	"net"
+    slogmulti "github.com/samber/slog-multi"
+    "golang.org/x/exp/slog"
+)
+
+func main() {
+	// ncat -l 1000 -k
+	// ncat -l 1001 -k
+	// ncat -l 1002 -k
+
+    // list AZs
+    // use github.com/netbrain/goautosocket for auto-reconnect
+	logstash1, _ := net.Dial("tcp", "logstash.eu-west-3a.internal:1000")
+	logstash2, _ := net.Dial("tcp", "logstash.eu-west-3b.internal:1000")
+	logstash3, _ := net.Dial("tcp", "logstash.eu-west-3c.internal:1000")
+
+	logger := slog.New(
+		slogmulti.Pool()(
+            // a random handler will be picked
+			slog.HandlerOptions{}.NewJSONHandler(logstash1),
+			slog.HandlerOptions{}.NewJSONHandler(logstash2),
+			slog.HandlerOptions{}.NewJSONHandler(logstash3),
 		),
 	)
 
