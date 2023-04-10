@@ -16,6 +16,14 @@ Design workflows of [slog](https://pkg.go.dev/golang.org/x/exp/slog) handlers:
 
 ![workflow example](./images/workflow.png)
 
+**See also:**
+
+- [slog-datadog](https://github.com/samber/slog-datadog): A `slog` handler for `Datadog`
+- [slog-logstach](https://github.com/samber/slog-logstach): A `slog` handler for `Logstach`
+- [slog-slack](https://github.com/samber/slog-slack): A `slog` handler for `Slack`
+- [slog-loki](https://github.com/samber/slog-loki): A `slog` handler for `Loki`
+- [slog-sentry](https://github.com/samber/slog-sentry): A `slog` handler for `Sentry`
+
 ## 🚀 Install
 
 ```sh

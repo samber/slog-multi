@@ -18,7 +18,6 @@ coverage:
 	${BIN} test -v -coverprofile=cover.out -covermode=atomic .
 	${BIN} tool cover -html=cover.out -o cover.html
 
-# tools
 tools:
 	${BIN} install github.com/cespare/reflex@latest
 	${BIN} install github.com/rakyll/gotest@latest
