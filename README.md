@@ -2,7 +2,7 @@
 # slog: handler chaining and broadcasting
 
 [![tag](https://img.shields.io/github/tag/samber/slog-multi.svg)](https://github.com/samber/slog-multi/releases)
-![Go Version](https://img.shields.io/badge/Go-%3E%3D%201.20-%23007d9c)
+![Go Version](https://img.shields.io/badge/Go-%3E%3D%201.20.1-%23007d9c)
 [![GoDoc](https://godoc.org/github.com/samber/slog-multi?status.svg)](https://pkg.go.dev/github.com/samber/slog-multi)
 ![Build Status](https://github.com/samber/slog-multi/actions/workflows/test.yml/badge.svg)
 [![Go report](https://goreportcard.com/badge/github.com/samber/slog-multi)](https://goreportcard.com/report/github.com/samber/slog-multi)
@@ -39,7 +39,7 @@ Distribute logs to multiple `slog.Handler` in parallel.
 ```go
 import (
     slogmulti "github.com/samber/slog-multi"
-	"golang.org/x/exp/slog"
+    "golang.org/x/exp/slog"
 )
 
 func main() {
@@ -93,35 +93,36 @@ Rewrite `log.Record` on the fly (eg: for privacy reason).
 
 ```go
 func main() {
-	// first middleware: format go `error` type into an object {error: "*myCustomErrorType", message: "could not reach https://a.b/c"}
-	errorFormattingMiddleware := slogmulti.NewHandleInlineMiddleware(errorFormattingMiddleware)
+    // first middleware: format go `error` type into an object {error: "*myCustomErrorType", message: "could not reach https://a.b/c"}
+    errorFormattingMiddleware := slogmulti.NewHandleInlineMiddleware(errorFormattingMiddleware)
 
-	// second middleware: remove PII
-	gdprMiddleware := NewGDPRMiddleware()
+    // second middleware: remove PII
+    gdprMiddleware := NewGDPRMiddleware()
 
     // final handler
-	sink := slog.HandlerOptions{}.NewJSONHandler(os.Stderr)
+    sink := slog.HandlerOptions{}.NewJSONHandler(os.Stderr)
 
-	logger := slog.New(
-		slogmulti.
-			Pipe(errorFormattingMiddleware).
-			Pipe(gdprMiddleware).
-            // ...
-			Handler(sink),
-	)
+    logger := slog.New(
+        slogmulti.
+        Pipe(errorFormattingMiddleware).
+        Pipe(gdprMiddleware).
+        // ...
+        Handler(sink),
+    )
 
-	logger.
-		With(
-			slog.Group("user",
-				slog.String("id", "user-123"),
-				slog.String("email", "user-123"),
-				slog.Time("created_at", time.Now().AddDate(0, 0, -1)),
-			),
-		).
-		With("environment", "dev").
-		Error("A message",
-			slog.String("foo", "bar"),
-			slog.Any("error", fmt.Errorf("an error")))
+    logger.
+        With(
+            slog.Group("user",
+                slog.String("id", "user-123"),
+                slog.String("email", "user-123"),
+                slog.Time("created_at", time.Now().AddDate(0, 0, -1)),
+            ),
+        ).
+        With("environment", "dev").
+        Error("A message",
+            slog.String("foo", "bar"),
+            slog.Any("error", fmt.Errorf("an error")),
+        )
 }
 ```
 
@@ -136,7 +137,7 @@ Stderr output:
         "id":"*******",
         "email":"*******",
         "created_at":"*******"
-  	},
+    },
     "environment":"dev",
     "foo":"bar",
     "error":{
@@ -247,7 +248,7 @@ make watch-test
 
 Give a ⭐️ if this project helped you!
 
-![support](https://github.com/sponsors/samber)
+![GitHub Sponsors](https://img.shields.io/github/sponsors/samber?style=for-the-badge)
 
 ## 📝 License
 
