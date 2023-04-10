@@ -30,7 +30,7 @@ No breaking changes will be made to exported APIs before v1.0.0.
 
 ## 💡 Usage
 
-GoDoc: [https://godoc.org/github.com/samber/slog-multi](https://godoc.org/github.com/samber/slog-multi)
+GoDoc: [https://pkg.go.dev/github.com/samber/slog-multi](https://pkg.go.dev/github.com/samber/slog-multi)
 
 ### Fanout: `slogmulti.Multi()`
 

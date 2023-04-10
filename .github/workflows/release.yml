@@ -5,7 +5,7 @@ on:
     inputs:
       semver:
         type: string
-        description: Semver
+        description: 'Semver (eg: v1.2.3)'
         required: true
 
 jobs:
