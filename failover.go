@@ -8,17 +8,19 @@ import (
 )
 
 // @TODO: implement round robin strategy ?
-type EitherHandler struct {
+type FailoverHandler struct {
 	handlers []slog.Handler
 }
 
-func Either(handlers ...slog.Handler) slog.Handler {
-	return &EitherHandler{
-		handlers: handlers,
+func Failover() func(...slog.Handler) slog.Handler {
+	return func(handlers ...slog.Handler) slog.Handler {
+		return &FailoverHandler{
+			handlers: handlers,
+		}
 	}
 }
 
-func (h *EitherHandler) Enabled(ctx context.Context, l slog.Level) bool {
+func (h *FailoverHandler) Enabled(ctx context.Context, l slog.Level) bool {
 	for i := range h.handlers {
 		if h.handlers[i].Enabled(ctx, l) {
 			return true
@@ -28,7 +30,7 @@ func (h *EitherHandler) Enabled(ctx context.Context, l slog.Level) bool {
 	return false
 }
 
-func (h *EitherHandler) Handle(ctx context.Context, r slog.Record) error {
+func (h *FailoverHandler) Handle(ctx context.Context, r slog.Record) error {
 	var err error
 
 	for i := range h.handlers {
@@ -45,16 +47,16 @@ func (h *EitherHandler) Handle(ctx context.Context, r slog.Record) error {
 	return err
 }
 
-func (h *EitherHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+func (h *FailoverHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	handers := lo.Map(h.handlers, func(h slog.Handler, _ int) slog.Handler {
 		return h.WithAttrs(attrs)
 	})
-	return Either(handers...)
+	return Failover()(handers...)
 }
 
-func (h *EitherHandler) WithGroup(name string) slog.Handler {
+func (h *FailoverHandler) WithGroup(name string) slog.Handler {
 	handers := lo.Map(h.handlers, func(h slog.Handler, _ int) slog.Handler {
 		return h.WithGroup(name)
 	})
-	return Either(handers...)
+	return Failover()(handers...)
 }

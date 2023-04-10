@@ -19,7 +19,7 @@ func main() {
 	logstash3, _ := net.Dial("tcp", "localhost:1002")
 
 	logger := slog.New(
-		slogmulti.Either(
+		slogmulti.Failover()(
 			slog.HandlerOptions{}.NewJSONHandler(logstash1),
 			slog.HandlerOptions{}.NewJSONHandler(logstash2),
 			slog.HandlerOptions{}.NewJSONHandler(logstash3),

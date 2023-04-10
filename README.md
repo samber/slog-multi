@@ -1,5 +1,5 @@
 
-# slog: Handler chain, fanout, fallback...
+# slog: Handler chain, fanout, failover...
 
 [![tag](https://img.shields.io/github/tag/samber/slog-multi.svg)](https://github.com/samber/slog-multi/releases)
 ![Go Version](https://img.shields.io/badge/Go-%3E%3D%201.20.1-%23007d9c)
@@ -13,7 +13,7 @@
 Design workflows of [slog](https://pkg.go.dev/golang.org/x/exp/slog) handlers:
 - **fanout**: distribute `log.Record` to multiple `slog.Handler` in parallel
 - **pipeline**: rewrite `log.Record` on the fly (eg: for privacy reason)
-- **fallback**: forward `log.Record` to the first available `slog.Handler`
+- **failover**: forward `log.Record` to the first available `slog.Handler`
 
 Here a simple workflow with both pipeline and fanout:
 
@@ -237,7 +237,7 @@ mdw := slogmulti.NewInlineMiddleware(
 )
 ```
 
-### Fallback: `slogmulti.Either()`
+### Failover: `slogmulti.Failover()`
 
 List multiple targets for a `slog.Record` instead of retrying on the same unavailable log management system.
 
@@ -261,7 +261,7 @@ func main() {
 	logstash3, _ := net.Dial("tcp", "logstash.eu-west-3c.internal:1000")
 
 	logger := slog.New(
-		slogmulti.Either(
+		slogmulti.Failover()(
 			slog.HandlerOptions{}.NewJSONHandler(logstash1),    // send to this instance first
 			slog.HandlerOptions{}.NewJSONHandler(logstash2),    // then this instance in case of failure
 			slog.HandlerOptions{}.NewJSONHandler(logstash3),    // and finally this instance in case of double failure
