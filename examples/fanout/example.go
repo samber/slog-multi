@@ -31,7 +31,7 @@ func main() {
 	stderr := os.Stderr
 
 	logger := slog.New(
-		slogmulti.NewMultiHandler(
+		slogmulti.Fanout(
 			slog.HandlerOptions{}.NewJSONHandler(logstash),
 			slog.HandlerOptions{}.NewTextHandler(stderr),
 		),

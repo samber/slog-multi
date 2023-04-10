@@ -14,10 +14,6 @@ func main() {
 	// ncat -l 1001 -k
 	// ncat -l 1002 -k
 
-	// logstash1, err := gas.Dial("tcp", "logstash.eu-west-3a.internal:1000")
-	// logstash2, err := gas.Dial("tcp", "logstash.eu-west-3b.internal:1000")
-	// logstash3, err := gas.Dial("tcp", "logstash.eu-west-3c.internal:1000")
-
 	logstash1, _ := net.Dial("tcp", "localhost:1000")
 	logstash2, _ := net.Dial("tcp", "localhost:1001")
 	logstash3, _ := net.Dial("tcp", "localhost:1002")

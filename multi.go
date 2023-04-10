@@ -7,17 +7,17 @@ import (
 	"golang.org/x/exp/slog"
 )
 
-type MultiHandler struct {
+type FanoutHandler struct {
 	handlers []slog.Handler
 }
 
-func NewMultiHandler(handlers ...slog.Handler) slog.Handler {
-	return &MultiHandler{
+func Fanout(handlers ...slog.Handler) slog.Handler {
+	return &FanoutHandler{
 		handlers: handlers,
 	}
 }
 
-func (h *MultiHandler) Enabled(ctx context.Context, l slog.Level) bool {
+func (h *FanoutHandler) Enabled(ctx context.Context, l slog.Level) bool {
 	for i := range h.handlers {
 		if h.handlers[i].Enabled(ctx, l) {
 			return true
@@ -28,7 +28,7 @@ func (h *MultiHandler) Enabled(ctx context.Context, l slog.Level) bool {
 }
 
 // @TODO: return multiple errors ?
-func (h *MultiHandler) Handle(ctx context.Context, r slog.Record) error {
+func (h *FanoutHandler) Handle(ctx context.Context, r slog.Record) error {
 	for i := range h.handlers {
 		if h.handlers[i].Enabled(ctx, r.Level) {
 			err := try(func() error {
@@ -43,16 +43,16 @@ func (h *MultiHandler) Handle(ctx context.Context, r slog.Record) error {
 	return nil
 }
 
-func (h *MultiHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+func (h *FanoutHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	handers := lo.Map(h.handlers, func(h slog.Handler, _ int) slog.Handler {
 		return h.WithAttrs(attrs)
 	})
-	return NewMultiHandler(handers...)
+	return Fanout(handers...)
 }
 
-func (h *MultiHandler) WithGroup(name string) slog.Handler {
+func (h *FanoutHandler) WithGroup(name string) slog.Handler {
 	handers := lo.Map(h.handlers, func(h slog.Handler, _ int) slog.Handler {
 		return h.WithGroup(name)
 	})
-	return NewMultiHandler(handers...)
+	return Fanout(handers...)
 }

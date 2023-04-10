@@ -45,7 +45,7 @@ No breaking changes will be made to exported APIs before v1.0.0.
 
 GoDoc: [https://pkg.go.dev/github.com/samber/slog-multi](https://pkg.go.dev/github.com/samber/slog-multi)
 
-### Fanout: `slogmulti.Multi()`
+### Broadcast: `slogmulti.Fanout()`
 
 Distribute logs to multiple `slog.Handler` in parallel.
 
@@ -60,9 +60,9 @@ func main() {
     stderr := os.Stderr
 
     logger := slog.New(
-        slogmulti.NewMultiHandler(
-            slog.HandlerOptions{}.NewJSONHandler(logstash),  // first handler: logstash over tcp
-            slog.HandlerOptions{}.NewTextHandler(stderr),    // second handler: stderr
+        slogmulti.Fanout(
+            slog.HandlerOptions{}.NewJSONHandler(logstash),  // pass to first handler: logstash over tcp
+            slog.HandlerOptions{}.NewTextHandler(stderr),    // then to second handler: stderr
             // ...
         ),
     )
@@ -248,12 +248,14 @@ import (
     "golang.org/x/exp/slog"
 )
 
+
 func main() {
 	// ncat -l 1000 -k
 	// ncat -l 1001 -k
 	// ncat -l 1002 -k
 
     // list AZs
+    // use github.com/netbrain/goautosocket for auto-reconnect
 	logstash1, _ := net.Dial("tcp", "logstash.eu-west-3a.internal:1000")
 	logstash2, _ := net.Dial("tcp", "logstash.eu-west-3b.internal:1000")
 	logstash3, _ := net.Dial("tcp", "logstash.eu-west-3c.internal:1000")
