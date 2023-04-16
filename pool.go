@@ -14,7 +14,8 @@ type PoolHandler struct {
 	handlers   []slog.Handler
 }
 
-// Uses a round robin strategy
+// Pool balances records between multiple slog.Handler in order to increase bandwidth.
+// Uses a round robin strategy.
 func Pool() func(...slog.Handler) slog.Handler {
 	return func(handlers ...slog.Handler) slog.Handler {
 		return &PoolHandler{
@@ -24,6 +25,7 @@ func Pool() func(...slog.Handler) slog.Handler {
 	}
 }
 
+// Implements slog.Handler
 func (h *PoolHandler) Enabled(ctx context.Context, l slog.Level) bool {
 	for i := range h.handlers {
 		if h.handlers[i].Enabled(ctx, l) {
@@ -34,6 +36,7 @@ func (h *PoolHandler) Enabled(ctx context.Context, l slog.Level) bool {
 	return false
 }
 
+// Implements slog.Handler
 func (h *PoolHandler) Handle(ctx context.Context, r slog.Record) error {
 	// round robin
 	rand := h.randSource.Int63() % int64(len(h.handlers))
@@ -55,6 +58,7 @@ func (h *PoolHandler) Handle(ctx context.Context, r slog.Record) error {
 	return err
 }
 
+// Implements slog.Handler
 func (h *PoolHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	handers := lo.Map(h.handlers, func(h slog.Handler, _ int) slog.Handler {
 		return h.WithAttrs(attrs)
@@ -62,6 +66,7 @@ func (h *PoolHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	return Pool()(handers...)
 }
 
+// Implements slog.Handler
 func (h *PoolHandler) WithGroup(name string) slog.Handler {
 	handers := lo.Map(h.handlers, func(h slog.Handler, _ int) slog.Handler {
 		return h.WithGroup(name)

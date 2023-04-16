@@ -12,6 +12,7 @@ type FailoverHandler struct {
 	handlers []slog.Handler
 }
 
+// Failover forward record to the first available slog.Handler
 func Failover() func(...slog.Handler) slog.Handler {
 	return func(handlers ...slog.Handler) slog.Handler {
 		return &FailoverHandler{
@@ -20,6 +21,7 @@ func Failover() func(...slog.Handler) slog.Handler {
 	}
 }
 
+// Implements slog.Handler
 func (h *FailoverHandler) Enabled(ctx context.Context, l slog.Level) bool {
 	for i := range h.handlers {
 		if h.handlers[i].Enabled(ctx, l) {
@@ -30,6 +32,7 @@ func (h *FailoverHandler) Enabled(ctx context.Context, l slog.Level) bool {
 	return false
 }
 
+// Implements slog.Handler
 func (h *FailoverHandler) Handle(ctx context.Context, r slog.Record) error {
 	var err error
 
@@ -47,6 +50,7 @@ func (h *FailoverHandler) Handle(ctx context.Context, r slog.Record) error {
 	return err
 }
 
+// Implements slog.Handler
 func (h *FailoverHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	handers := lo.Map(h.handlers, func(h slog.Handler, _ int) slog.Handler {
 		return h.WithAttrs(attrs)
@@ -54,6 +58,7 @@ func (h *FailoverHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	return Failover()(handers...)
 }
 
+// Implements slog.Handler
 func (h *FailoverHandler) WithGroup(name string) slog.Handler {
 	handers := lo.Map(h.handlers, func(h slog.Handler, _ int) slog.Handler {
 		return h.WithGroup(name)
