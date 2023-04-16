@@ -23,6 +23,7 @@ Here a simple workflow with both pipeline and fanout:
 **See also:**
 
 - [slog-formatter](https://github.com/samber/slog-formatter): `slog` attribute formatting
+- [slog-gin](https://github.com/samber/slog-gin): Gin middleware for `slog` logger
 - [slog-datadog](https://github.com/samber/slog-datadog): A `slog` handler for `Datadog`
 - [slog-logstash](https://github.com/samber/slog-logstash): A `slog` handler for `Logstash`
 - [slog-slack](https://github.com/samber/slog-slack): A `slog` handler for `Slack`
