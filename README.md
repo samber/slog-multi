@@ -1,5 +1,5 @@
 
-# slog: Handler chain, fanout, failover, load balancing...
+# slog: Handler chaining, fanout, failover, load balancing...
 
 [![tag](https://img.shields.io/github/tag/samber/slog-multi.svg)](https://github.com/samber/slog-multi/releases)
 ![Go Version](https://img.shields.io/badge/Go-%3E%3D%201.20.1-%23007d9c)
@@ -22,6 +22,7 @@ Here a simple workflow with both pipeline and fanout:
 
 **See also:**
 
+- [slog-formatter](https://github.com/samber/slog-formatter): `slog` attribute formatting
 - [slog-datadog](https://github.com/samber/slog-datadog): A `slog` handler for `Datadog`
 - [slog-logstash](https://github.com/samber/slog-logstash): A `slog` handler for `Logstash`
 - [slog-slack](https://github.com/samber/slog-slack): A `slog` handler for `Slack`
@@ -41,6 +42,8 @@ go get github.com/samber/slog-multi
 This library is v0 and follows SemVer strictly. On `slog` final release (go 1.21), this library will go v1.
 
 No breaking changes will be made to exported APIs before v1.0.0.
+
+⚠️ Use this library carefully, log processing can be very costly (!)
 
 ## 💡 Usage
 
@@ -352,7 +355,7 @@ make watch-test
 
 Give a ⭐️ if this project helped you!
 
-![GitHub Sponsors](https://img.shields.io/github/sponsors/samber?style=for-the-badge)
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/samber?style=for-the-badge)](https://github.com/sponsors/samber)
 
 ## 📝 License
 
