@@ -2,7 +2,7 @@
 # slog: Handler chaining, fanout, failover, load balancing...
 
 [![tag](https://img.shields.io/github/tag/samber/slog-multi.svg)](https://github.com/samber/slog-multi/releases)
-![Go Version](https://img.shields.io/badge/Go-%3E%3D%201.20.1-%23007d9c)
+![Go Version](https://img.shields.io/badge/Go-%3E%3D%201.20.3-%23007d9c)
 [![GoDoc](https://godoc.org/github.com/samber/slog-multi?status.svg)](https://pkg.go.dev/github.com/samber/slog-multi)
 ![Build Status](https://github.com/samber/slog-multi/actions/workflows/test.yml/badge.svg)
 [![Go report](https://goreportcard.com/badge/github.com/samber/slog-multi)](https://goreportcard.com/report/github.com/samber/slog-multi)
@@ -39,7 +39,7 @@ Here a simple workflow with both pipeline and fanout:
 go get github.com/samber/slog-multi
 ```
 
-**Compatibility**: go >= 1.20.1
+**Compatibility**: go >= 1.20.3
 
 This library is v0 and follows SemVer strictly. On `slog` final release (go 1.21), this library will go v1.
 

@@ -29,12 +29,14 @@ func (h *gdprMiddleware) Enabled(ctx context.Context, level slog.Level) bool {
 func (h *gdprMiddleware) Handle(ctx context.Context, record slog.Record) error {
 	attrs := []slog.Attr{}
 
-	record.Attrs(func(attr slog.Attr) {
+	record.Attrs(func(attr slog.Attr) bool {
 		if mightContainPII(attr.Key) {
 			attrs = append(attrs, anonymize(attr))
 		} else {
 			attrs = append(attrs, attr)
 		}
+
+		return true
 	})
 
 	// new record with anonymized data

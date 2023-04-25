@@ -10,7 +10,7 @@ import (
 func errorFormattingMiddleware(ctx context.Context, record slog.Record, next func(context.Context, slog.Record) error) error {
 	attrs := []slog.Attr{}
 
-	record.Attrs(func(attr slog.Attr) {
+	record.Attrs(func(attr slog.Attr) bool {
 		key := attr.Key
 		value := attr.Value
 		kind := attr.Value.Kind()
@@ -33,6 +33,8 @@ func errorFormattingMiddleware(ctx context.Context, record slog.Record, next fun
 		} else {
 			attrs = append(attrs, attr)
 		}
+
+		return true
 	})
 
 	// new record with formatted error
