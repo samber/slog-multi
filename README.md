@@ -1,5 +1,5 @@
 
-# slog: Handler chaining, fanout, failover, load balancing...
+# slog: Handler chaining, fanout, routing, failover, load balancing...
 
 [![tag](https://img.shields.io/github/tag/samber/slog-multi.svg)](https://github.com/samber/slog-multi/releases)
 ![Go Version](https://img.shields.io/badge/Go-%3E%3D%201.20.3-%23007d9c)
