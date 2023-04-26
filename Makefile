@@ -33,11 +33,11 @@ lint:
 lint-fix:
 	golangci-lint run --timeout 60s --max-same-issues 50 --fix ./...
 
-audit: tools
+audit:
 	${BIN} list -json -m all | nancy sleuth
 
-outdated: tools
+outdated:
 	${BIN} list -u -m -json all | go-mod-outdated -update -direct
 
-weight: tools
+weight:
 	goweight

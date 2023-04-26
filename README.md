@@ -13,6 +13,7 @@
 Design workflows of [slog](https://pkg.go.dev/golang.org/x/exp/slog) handlers:
 - **fanout**: distribute `log.Record` to multiple `slog.Handler` in parallel
 - **pipeline**: rewrite `log.Record` on the fly (eg: for privacy reason)
+- **routing**: forward `log.Record` to all matching `slog.Handler`
 - **failover**: forward `log.Record` to the first available `slog.Handler`
 - **load balancing**: increase log bandwidth by sending `log.Record` to a pool of `slog.Handler`
 
@@ -105,6 +106,54 @@ Netcat output:
 	},
 	"environment":"dev",
 	"error":"an error"
+}
+```
+
+### Routing: `slogmulti.Router()`
+
+Distribute logs to all matching `slog.Handler` in parallel.
+
+```go
+import (
+    slogmulti "github.com/samber/slog-multi"
+	slogslack "github.com/samber/slog-slack"
+    "golang.org/x/exp/slog"
+)
+
+func main() {
+    slackChannelUS := slogslack.Option{Level: slog.LevelError, WebhookURL: "xxx", Channel: "supervision-us"}.NewSlackHandler()
+	slackChannelEU := slogslack.Option{Level: slog.LevelError, WebhookURL: "xxx", Channel: "supervision-eu"}.NewSlackHandler()
+	slackChannelAPAC := slogslack.Option{Level: slog.LevelError, WebhookURL: "xxx", Channel: "supervision-apac"}.NewSlackHandler()
+
+	logger := slog.New(
+		slogmulti.Router().
+			Add(slackChannelUS, recordMatchRegion("us")).
+			Add(slackChannelEU, recordMatchRegion("eu")).
+			Add(slackChannelAPAC, recordMatchRegion("apac")).
+			Handler(),
+	)
+
+	logger.
+		With("region", "us").
+		With("pool", "us-east-1").
+		Error("Server desynchronized")
+}
+
+func recordMatchRegion(region string) func(ctx context.Context, r slog.Record) bool {
+	return func(ctx context.Context, r slog.Record) bool {
+		ok := false
+
+		r.Attrs(func(attr slog.Attr) bool {
+			if attr.Key == "region" && attr.Value.Kind() == slog.KindString && attr.Value.String() == region {
+				ok = true
+				return false
+			}
+
+			return true
+		})
+
+		return ok
+	}
 }
 ```
 
