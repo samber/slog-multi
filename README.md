@@ -78,8 +78,8 @@ func main() {
 
     logger := slog.New(
         slogmulti.Fanout(
-            slog.HandlerOptions{}.NewJSONHandler(logstash),  // pass to first handler: logstash over tcp
-            slog.HandlerOptions{}.NewTextHandler(stderr),    // then to second handler: stderr
+            slog.NewJSONHandler(logstash, &slog.HandlerOptions{}),  // pass to first handler: logstash over tcp
+            slog.NewTextHandler(stderr, &slog.HandlerOptions{}),    // then to second handler: stderr
             // ...
         ),
     )
@@ -268,7 +268,7 @@ func main() {
     gdprMiddleware := NewGDPRMiddleware()
 
     // final handler
-    sink := slog.HandlerOptions{}.NewJSONHandler(os.Stderr)
+    sink := slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{})
 
     logger := slog.New(
         slogmulti.
