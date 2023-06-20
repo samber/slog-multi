@@ -16,7 +16,7 @@ func main() {
 	// remove PII
 	gdprMiddleware := NewGDPRMiddleware()
 
-	sink := slog.HandlerOptions{}.NewJSONHandler(os.Stderr)
+	sink := slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{})
 
 	logger := slog.New(
 		slogmulti.

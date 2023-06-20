@@ -32,8 +32,8 @@ func main() {
 
 	logger := slog.New(
 		slogmulti.Fanout(
-			slog.HandlerOptions{}.NewJSONHandler(logstash),
-			slog.HandlerOptions{}.NewTextHandler(stderr),
+			slog.NewJSONHandler(logstash, &slog.HandlerOptions{}),
+			slog.NewTextHandler(stderr, &slog.HandlerOptions{}),
 		),
 	)
 

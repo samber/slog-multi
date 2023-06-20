@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	"github.com/samber/lo"
 	slogmulti "github.com/samber/slog-multi"
 	"golang.org/x/exp/slog"
 )
@@ -90,7 +91,7 @@ func anonymize(attr slog.Attr) slog.Attr {
 		for i := range attrs {
 			attrs[i] = anonymize(attrs[i])
 		}
-		return slog.Group(k, attrs...)
+		return slog.Group(k, lo.ToAnySlice(attrs)...)
 	default:
 		return slog.String(k, "*******")
 	}

@@ -20,9 +20,9 @@ func main() {
 
 	logger := slog.New(
 		slogmulti.Pool()(
-			slog.HandlerOptions{}.NewJSONHandler(logstash1),
-			slog.HandlerOptions{}.NewJSONHandler(logstash2),
-			slog.HandlerOptions{}.NewJSONHandler(logstash3),
+			slog.NewJSONHandler(logstash1, &slog.HandlerOptions{}),
+			slog.NewJSONHandler(logstash2, &slog.HandlerOptions{}),
+			slog.NewJSONHandler(logstash3, &slog.HandlerOptions{}),
 		),
 	)
 
