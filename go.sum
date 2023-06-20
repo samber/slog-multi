@@ -10,8 +10,8 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/samber/lo v1.38.1 h1:j2XEAqXKb09Am4ebOg31SpvzUTTs6EN3VfgeLUhPdXM=
 github.com/samber/lo v1.38.1/go.mod h1:+m/ZKRl6ClXCE2Lgf3MsQlWfh4bn1bz6CXEOxnEXnEA=
-github.com/samber/slog-slack v0.1.1 h1:h36tHCIeNSX3lPD7wtIfblOem1lanWIh77p0zszrq3I=
-github.com/samber/slog-slack v0.1.1/go.mod h1:rXkQmNKcjKhMAAl0cfbH0cnlgveqGXUdoIyYnEmnguQ=
+github.com/samber/slog-slack v0.4.0 h1:fhEpmLKVZsYzQqd20QaevhQZl3xXUFXNKFPb0nLi/9w=
+github.com/samber/slog-slack v0.4.0/go.mod h1:WimcydF+aRQvsuZjV1ygqMJWuLm5N1GdwH/pErWHxbY=
 github.com/slack-go/slack v0.12.1 h1:X97b9g2hnITDtNsNe5GkGx6O2/Sz/uC20ejRZN6QxOw=
 github.com/slack-go/slack v0.12.1/go.mod h1:hlGi5oXA+Gt+yWTPP0plCdRKmjsDxecdHxYQdlMQKOw=
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
