@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
+	"log/slog"
 	"strings"
 
 	"github.com/samber/lo"
 	slogmulti "github.com/samber/slog-multi"
-	"golang.org/x/exp/slog"
 )
 
 func NewGDPRMiddleware() slogmulti.Middleware {

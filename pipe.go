@@ -1,8 +1,6 @@
 package slogmulti
 
-import (
-	"golang.org/x/exp/slog"
-)
+import "log/slog"
 
 // Pipe defines a chain of Middleware.
 type PipeBuilder struct {

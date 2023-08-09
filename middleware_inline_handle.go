@@ -2,8 +2,7 @@ package slogmulti
 
 import (
 	"context"
-
-	"golang.org/x/exp/slog"
+	"log/slog"
 )
 
 // NewHandleInlineMiddleware is a shortcut to a middleware that implements only the `Handle` method.

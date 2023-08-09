@@ -2,9 +2,9 @@ package slogmulti
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/samber/lo"
-	"golang.org/x/exp/slog"
 )
 
 type FanoutHandler struct {

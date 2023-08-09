@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/samber/lo"
-	"golang.org/x/exp/slog"
+	"log/slog"
 )
 
 // @TODO: implement round robin strategy ?

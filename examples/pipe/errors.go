@@ -2,9 +2,8 @@ package main
 
 import (
 	"context"
+	"log/slog"
 	"reflect"
-
-	"golang.org/x/exp/slog"
 )
 
 func errorFormattingMiddleware(ctx context.Context, record slog.Record, next func(context.Context, slog.Record) error) error {

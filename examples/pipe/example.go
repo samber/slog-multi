@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"time"
 
 	slogmulti "github.com/samber/slog-multi"
-	"golang.org/x/exp/slog"
 )
 
 func main() {

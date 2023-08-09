@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
+	"log/slog"
 
 	slogmulti "github.com/samber/slog-multi"
 	slogslack "github.com/samber/slog-slack"
-	"golang.org/x/exp/slog"
 )
 
 func recordMatchRegion(region string) func(ctx context.Context, r slog.Record) bool {

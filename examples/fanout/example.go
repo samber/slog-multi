@@ -7,8 +7,9 @@ import (
 	"os"
 	"time"
 
+	"log/slog"
+
 	slogmulti "github.com/samber/slog-multi"
-	"golang.org/x/exp/slog"
 )
 
 func connectLogstash() *net.TCPConn {

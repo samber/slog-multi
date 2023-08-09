@@ -2,11 +2,11 @@ package slogmulti
 
 import (
 	"context"
+	"log/slog"
 	"math/rand"
 	"time"
 
 	"github.com/samber/lo"
-	"golang.org/x/exp/slog"
 )
 
 type PoolHandler struct {
