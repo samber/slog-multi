@@ -2,7 +2,7 @@
 # slog: Handler chaining, fanout, routing, failover, load balancing...
 
 [![tag](https://img.shields.io/github/tag/samber/slog-multi.svg)](https://github.com/samber/slog-multi/releases)
-![Go Version](https://img.shields.io/badge/Go-%3E%3D%201.20.3-%23007d9c)
+![Go Version](https://img.shields.io/badge/Go-%3E%3D%201.21-%23007d9c)
 [![GoDoc](https://godoc.org/github.com/samber/slog-multi?status.svg)](https://pkg.go.dev/github.com/samber/slog-multi)
 ![Build Status](https://github.com/samber/slog-multi/actions/workflows/test.yml/badge.svg)
 [![Go report](https://goreportcard.com/badge/github.com/samber/slog-multi)](https://goreportcard.com/report/github.com/samber/slog-multi)
@@ -10,7 +10,7 @@
 [![Contributors](https://img.shields.io/github/contributors/samber/slog-multi)](https://github.com/samber/slog-multi/graphs/contributors)
 [![License](https://img.shields.io/github/license/samber/slog-multi)](./LICENSE)
 
-Design workflows of [slog](https://pkg.go.dev/golang.org/x/exp/slog) handlers:
+Design workflows of [slog](https://pkg.go.dev/log/slog) handlers:
 - **fanout**: distribute `log.Record` to multiple `slog.Handler` in parallel
 - **pipeline**: rewrite `log.Record` on the fly (eg: for privacy reason)
 - **routing**: forward `log.Record` to all matching `slog.Handler`
@@ -50,11 +50,9 @@ Here a simple workflow with both pipeline and fanout:
 go get github.com/samber/slog-multi
 ```
 
-**Compatibility**: go >= 1.20.3
+**Compatibility**: go >= 1.21
 
-This library is v0 and follows SemVer strictly. On `slog` final release (go 1.21), this library will go v1.
-
-No breaking changes will be made to exported APIs before v1.0.0.
+No breaking changes will be made to exported APIs before v2.0.0.
 
 ⚠️ Use this library carefully, log processing can be very costly (!)
 
@@ -69,7 +67,7 @@ Distribute logs to multiple `slog.Handler` in parallel.
 ```go
 import (
     slogmulti "github.com/samber/slog-multi"
-    "golang.org/x/exp/slog"
+    "log/slog"
 )
 
 func main() {
@@ -127,7 +125,7 @@ Distribute logs to all matching `slog.Handler` in parallel.
 import (
     slogmulti "github.com/samber/slog-multi"
 	slogslack "github.com/samber/slog-slack"
-    "golang.org/x/exp/slog"
+    "log/slog"
 )
 
 func main() {
@@ -175,7 +173,7 @@ List multiple targets for a `slog.Record` instead of retrying on the same unavai
 import (
 	"net"
     slogmulti "github.com/samber/slog-multi"
-    "golang.org/x/exp/slog"
+    "log/slog"
 )
 
 
@@ -219,7 +217,7 @@ Increase log bandwidth by sending `log.Record` to a pool of `slog.Handler`.
 import (
 	"net"
     slogmulti "github.com/samber/slog-multi"
-    "golang.org/x/exp/slog"
+    "log/slog"
 )
 
 func main() {

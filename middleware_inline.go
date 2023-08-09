@@ -3,7 +3,7 @@ package slogmulti
 import (
 	"context"
 
-	"golang.org/x/exp/slog"
+	"log/slog"
 )
 
 // NewInlineMiddleware is a shortcut to a middleware that implements all methods.

@@ -4,7 +4,7 @@ import (
 	"context"
 	"reflect"
 
-	"golang.org/x/exp/slog"
+	"log/slog"
 )
 
 func errorFormattingMiddleware(ctx context.Context, record slog.Record, next func(context.Context, slog.Record) error) error {

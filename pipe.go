@@ -1,7 +1,7 @@
 package slogmulti
 
 import (
-	"golang.org/x/exp/slog"
+	"log/slog"
 )
 
 // Pipe defines a chain of Middleware.
