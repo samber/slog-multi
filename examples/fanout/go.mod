@@ -2,7 +2,7 @@ module github.com/samber/slog-multi/examples/fanout
 
 go 1.21
 
-require github.com/samber/slog-multi v0.6.1
+require github.com/samber/slog-multi v1.0.0
 
 require (
 	github.com/samber/lo v1.38.1 // indirect
