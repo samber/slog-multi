@@ -190,9 +190,9 @@ func main() {
 
 	logger := slog.New(
 		slogmulti.Failover()(
-			slog.HandlerOptions{}.NewJSONHandler(logstash1),    // send to this instance first
-			slog.HandlerOptions{}.NewJSONHandler(logstash2),    // then this instance in case of failure
-			slog.HandlerOptions{}.NewJSONHandler(logstash3),    // and finally this instance in case of double failure
+			slog.HandlerOptions{}.NewJSONHandler(logstash1, nil),    // send to this instance first
+			slog.HandlerOptions{}.NewJSONHandler(logstash2, nil),    // then this instance in case of failure
+			slog.HandlerOptions{}.NewJSONHandler(logstash3, nil),    // and finally this instance in case of double failure
 		),
 	)
 
@@ -234,9 +234,9 @@ func main() {
 	logger := slog.New(
 		slogmulti.Pool()(
             // a random handler will be picked
-			slog.HandlerOptions{}.NewJSONHandler(logstash1),
-			slog.HandlerOptions{}.NewJSONHandler(logstash2),
-			slog.HandlerOptions{}.NewJSONHandler(logstash3),
+			slog.HandlerOptions{}.NewJSONHandler(logstash1, nil),
+			slog.HandlerOptions{}.NewJSONHandler(logstash2, nil),
+			slog.HandlerOptions{}.NewJSONHandler(logstash3, nil),
 		),
 	)
 
