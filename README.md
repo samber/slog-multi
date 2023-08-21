@@ -43,6 +43,7 @@ Here a simple workflow with both pipeline and fanout:
 - [slog-microsoft-teams](https://github.com/samber/slog-microsoft-teams): A `slog` handler for `Microsoft Teams`
 - [slog-webhook](https://github.com/samber/slog-webhook): A `slog` handler for `Webhook`
 - [slog-kafka](https://github.com/samber/slog-kafka): A `slog` handler for `Kafka`
+- [slog-parquet](https://github.com/samber/slog-parquet): A `slog` handler for `Parquet` + `Object Storage`
 
 ## 🚀 Install
 
