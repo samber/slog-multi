@@ -16,6 +16,8 @@ func NewWithAttrsInlineMiddleware(withAttrsFunc func(attrs []slog.Attr, next fun
 	}
 }
 
+var _ slog.Handler = (*WithAttrsInlineMiddleware)(nil)
+
 type WithAttrsInlineMiddleware struct {
 	next          slog.Handler
 	withAttrsFunc func(attrs []slog.Attr, next func([]slog.Attr) slog.Handler) slog.Handler

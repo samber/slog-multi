@@ -10,6 +10,8 @@ import (
 	"github.com/samber/lo"
 )
 
+var _ slog.Handler = (*PoolHandler)(nil)
+
 type PoolHandler struct {
 	randSource rand.Source
 	handlers   []slog.Handler

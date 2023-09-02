@@ -8,6 +8,8 @@ import (
 	"github.com/samber/lo"
 )
 
+var _ slog.Handler = (*FailoverHandler)(nil)
+
 // @TODO: implement round robin strategy ?
 type FailoverHandler struct {
 	handlers []slog.Handler

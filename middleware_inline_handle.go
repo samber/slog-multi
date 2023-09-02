@@ -16,6 +16,8 @@ func NewHandleInlineMiddleware(handleFunc func(ctx context.Context, record slog.
 	}
 }
 
+var _ slog.Handler = (*HandleInlineMiddleware)(nil)
+
 type HandleInlineMiddleware struct {
 	next       slog.Handler
 	handleFunc func(ctx context.Context, record slog.Record, next func(context.Context, slog.Record) error) error

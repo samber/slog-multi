@@ -8,6 +8,8 @@ import (
 	"github.com/samber/lo"
 )
 
+var _ slog.Handler = (*FanoutHandler)(nil)
+
 type FanoutHandler struct {
 	handlers []slog.Handler
 }

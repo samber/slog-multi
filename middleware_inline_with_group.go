@@ -16,6 +16,8 @@ func NewWithGroupInlineMiddleware(withGroupFunc func(name string, next func(stri
 	}
 }
 
+var _ slog.Handler = (*WithGroupInlineMiddleware)(nil)
+
 type WithGroupInlineMiddleware struct {
 	next          slog.Handler
 	withGroupFunc func(name string, next func(string) slog.Handler) slog.Handler

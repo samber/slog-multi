@@ -16,6 +16,8 @@ func NewEnabledInlineMiddleware(enabledFunc func(ctx context.Context, level slog
 	}
 }
 
+var _ slog.Handler = (*EnabledInlineMiddleware)(nil)
+
 type EnabledInlineMiddleware struct {
 	next slog.Handler
 	// enableFunc func(context.Context, slog.Level) bool

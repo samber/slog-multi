@@ -24,6 +24,8 @@ func NewInlineMiddleware(
 	}
 }
 
+var _ slog.Handler = (*InlineMiddleware)(nil)
+
 type InlineMiddleware struct {
 	next          slog.Handler
 	enabledFunc   func(ctx context.Context, level slog.Level, next func(context.Context, slog.Level) bool) bool
