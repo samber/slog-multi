@@ -55,7 +55,7 @@ func (h *RoutableHandler) Handle(ctx context.Context, r slog.Record) error {
 		}
 	}
 
-	return h.Handle(ctx, r)
+	return h.handler.Handle(ctx, r)
 }
 
 // Implements slog.Handler
