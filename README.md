@@ -44,6 +44,9 @@ Here a simple workflow with both pipeline and fanout:
 - [slog-webhook](https://github.com/samber/slog-webhook): A `slog` handler for `Webhook`
 - [slog-kafka](https://github.com/samber/slog-kafka): A `slog` handler for `Kafka`
 - [slog-parquet](https://github.com/samber/slog-parquet): A `slog` handler for `Parquet` + `Object Storage`
+- [slog-zap](https://github.com/samber/slog-zap): A `slog` handler for `Zap`
+- [slog-zap](https://github.com/samber/slog-zerolog): A `slog` handler for `Zerolog`
+- [slog-zap](https://github.com/samber/slog-logrus): A `slog` handler for `Logrus`
 
 ## 🚀 Install
 
