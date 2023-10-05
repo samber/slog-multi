@@ -44,7 +44,7 @@ type RoutableHandler struct {
 
 // Implements slog.Handler
 func (h *RoutableHandler) Enabled(ctx context.Context, l slog.Level) bool {
-	return true
+	return h.handler.Enabled(ctx, l)
 }
 
 // Implements slog.Handler
