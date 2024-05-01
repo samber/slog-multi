@@ -52,6 +52,7 @@ Here a simple workflow with both pipeline and fanout:
 - [slog-logstash](https://github.com/samber/slog-logstash): A `slog` handler for `Logstash`
 - [slog-fluentd](https://github.com/samber/slog-fluentd): A `slog` handler for `Fluentd`
 - [slog-graylog](https://github.com/samber/slog-graylog): A `slog` handler for `Graylog`
+- [slog-quickwit](https://github.com/samber/slog-quickwit): A `slog` handler for `Quickwit`
 - [slog-slack](https://github.com/samber/slog-slack): A `slog` handler for `Slack`
 - [slog-telegram](https://github.com/samber/slog-telegram): A `slog` handler for `Telegram`
 - [slog-mattermost](https://github.com/samber/slog-mattermost): A `slog` handler for `Mattermost`
