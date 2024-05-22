@@ -2,9 +2,9 @@ package slogmulti
 
 import (
 	"context"
-
 	"log/slog"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/samber/lo"
 )
 
@@ -33,20 +33,20 @@ func (h *FanoutHandler) Enabled(ctx context.Context, l slog.Level) bool {
 }
 
 // Implements slog.Handler
-// @TODO: return multiple errors ?
 func (h *FanoutHandler) Handle(ctx context.Context, r slog.Record) error {
+	var result error
 	for i := range h.handlers {
 		if h.handlers[i].Enabled(ctx, r.Level) {
 			err := try(func() error {
 				return h.handlers[i].Handle(ctx, r.Clone())
 			})
 			if err != nil {
-				return err
+				result = multierror.Append(result, err)
 			}
 		}
 	}
 
-	return nil
+	return result
 }
 
 // Implements slog.Handler
