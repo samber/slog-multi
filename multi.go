@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"slices"
 
 	"github.com/samber/lo"
 )
@@ -50,7 +51,7 @@ func (h *FanoutHandler) Handle(ctx context.Context, r slog.Record) error {
 // Implements slog.Handler
 func (h *FanoutHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	handers := lo.Map(h.handlers, func(h slog.Handler, _ int) slog.Handler {
-		return h.WithAttrs(attrs)
+		return h.WithAttrs(slices.Clone(attrs))
 	})
 	return Fanout(handers...)
 }
