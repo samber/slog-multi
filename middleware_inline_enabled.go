@@ -41,5 +41,10 @@ func (h *EnabledInlineMiddleware) WithAttrs(attrs []slog.Attr) slog.Handler {
 
 // Implements slog.Handler
 func (h *EnabledInlineMiddleware) WithGroup(name string) slog.Handler {
+	// https://cs.opensource.google/go/x/exp/+/46b07846:slog/handler.go;l=247
+	if name == "" {
+		return h
+	}
+
 	return NewEnabledInlineMiddleware(h.enabledFunc)(h.next.WithGroup(name))
 }

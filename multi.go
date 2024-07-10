@@ -58,6 +58,11 @@ func (h *FanoutHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 
 // Implements slog.Handler
 func (h *FanoutHandler) WithGroup(name string) slog.Handler {
+	// https://cs.opensource.google/go/x/exp/+/46b07846:slog/handler.go;l=247
+	if name == "" {
+		return h
+	}
+
 	handers := lo.Map(h.handlers, func(h slog.Handler, _ int) slog.Handler {
 		return h.WithGroup(name)
 	})
