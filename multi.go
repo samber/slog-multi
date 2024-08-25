@@ -35,17 +35,21 @@ func (h *FanoutHandler) Enabled(ctx context.Context, l slog.Level) bool {
 
 // Implements slog.Handler
 func (h *FanoutHandler) Handle(ctx context.Context, r slog.Record) error {
-	var result error
+	// We initialize this with a capacity of 0 to optimize for the path where there are no errors
+	errs := make([]error, 0, 0)
 	for i := range h.handlers {
 		if h.handlers[i].Enabled(ctx, r.Level) {
 			err := try(func() error {
 				return h.handlers[i].Handle(ctx, r.Clone())
 			})
-			result = errors.Join(result, err)
+			if err != nil {
+				errs = append(errs, err)
+			}
 		}
 	}
 
-	return result
+	// If errs is empty, or contains only nil errors, this returns nil
+	return errors.Join(errs...)
 }
 
 // Implements slog.Handler
