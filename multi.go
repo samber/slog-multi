@@ -35,8 +35,7 @@ func (h *FanoutHandler) Enabled(ctx context.Context, l slog.Level) bool {
 
 // Implements slog.Handler
 func (h *FanoutHandler) Handle(ctx context.Context, r slog.Record) error {
-	// We initialize this with a capacity of 0 to optimize for the path where there are no errors
-	errs := make([]error, 0, 0)
+	var errs []error
 	for i := range h.handlers {
 		if h.handlers[i].Enabled(ctx, r.Level) {
 			err := try(func() error {
