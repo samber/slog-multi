@@ -41,6 +41,10 @@ func (h *PoolHandler) Enabled(ctx context.Context, l slog.Level) bool {
 
 // Implements slog.Handler
 func (h *PoolHandler) Handle(ctx context.Context, r slog.Record) error {
+	if len(h.handlers) == 0 {
+		return nil
+	}
+
 	// round robin
 	rand := h.randSource.Int63() % int64(len(h.handlers))
 	handlers := append(h.handlers[rand:], h.handlers[:rand]...)
