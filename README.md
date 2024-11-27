@@ -89,7 +89,8 @@ go get github.com/samber/slog-multi
 
 No breaking changes will be made to exported APIs before v2.0.0.
 
-⚠️ Use this library carefully, log processing can be very costly (!)
+> [!WARNING]
+> Use this library carefully, log processing can be very costly (!)
 
 ## 💡 Usage
 
@@ -159,44 +160,44 @@ Distribute logs to all matching `slog.Handler` in parallel.
 ```go
 import (
     slogmulti "github.com/samber/slog-multi"
-	slogslack "github.com/samber/slog-slack"
+    slogslack "github.com/samber/slog-slack"
     "log/slog"
 )
 
 func main() {
     slackChannelUS := slogslack.Option{Level: slog.LevelError, WebhookURL: "xxx", Channel: "supervision-us"}.NewSlackHandler()
-	slackChannelEU := slogslack.Option{Level: slog.LevelError, WebhookURL: "xxx", Channel: "supervision-eu"}.NewSlackHandler()
-	slackChannelAPAC := slogslack.Option{Level: slog.LevelError, WebhookURL: "xxx", Channel: "supervision-apac"}.NewSlackHandler()
+    slackChannelEU := slogslack.Option{Level: slog.LevelError, WebhookURL: "xxx", Channel: "supervision-eu"}.NewSlackHandler()
+    slackChannelAPAC := slogslack.Option{Level: slog.LevelError, WebhookURL: "xxx", Channel: "supervision-apac"}.NewSlackHandler()
 
-	logger := slog.New(
-		slogmulti.Router().
-			Add(slackChannelUS, recordMatchRegion("us")).
-			Add(slackChannelEU, recordMatchRegion("eu")).
-			Add(slackChannelAPAC, recordMatchRegion("apac")).
-			Handler(),
-	)
+    logger := slog.New(
+        slogmulti.Router().
+            Add(slackChannelUS, recordMatchRegion("us")).
+            Add(slackChannelEU, recordMatchRegion("eu")).
+            Add(slackChannelAPAC, recordMatchRegion("apac")).
+            Handler(),
+    )
 
-	logger.
-		With("region", "us").
-		With("pool", "us-east-1").
-		Error("Server desynchronized")
+    logger.
+        With("region", "us").
+        With("pool", "us-east-1").
+        Error("Server desynchronized")
 }
 
 func recordMatchRegion(region string) func(ctx context.Context, r slog.Record) bool {
-	return func(ctx context.Context, r slog.Record) bool {
-		ok := false
+    return func(ctx context.Context, r slog.Record) bool {
+        ok := false
 
-		r.Attrs(func(attr slog.Attr) bool {
-			if attr.Key == "region" && attr.Value.Kind() == slog.KindString && attr.Value.String() == region {
-				ok = true
-				return false
-			}
+        r.Attrs(func(attr slog.Attr) bool {
+            if attr.Key == "region" && attr.Value.Kind() == slog.KindString && attr.Value.String() == region {
+                ok = true
+                return false
+            }
 
-			return true
-		})
+            return true
+        })
 
-		return ok
-	}
+        return ok
+    }
 }
 ```
 
@@ -206,41 +207,41 @@ List multiple targets for a `slog.Record` instead of retrying on the same unavai
 
 ```go
 import (
-	"net"
+    "net"
     slogmulti "github.com/samber/slog-multi"
     "log/slog"
 )
 
 
 func main() {
-	// ncat -l 1000 -k
-	// ncat -l 1001 -k
-	// ncat -l 1002 -k
+    // ncat -l 1000 -k
+    // ncat -l 1001 -k
+    // ncat -l 1002 -k
 
     // list AZs
     // use github.com/netbrain/goautosocket for auto-reconnect
-	logstash1, _ := net.Dial("tcp", "logstash.eu-west-3a.internal:1000")
-	logstash2, _ := net.Dial("tcp", "logstash.eu-west-3b.internal:1000")
-	logstash3, _ := net.Dial("tcp", "logstash.eu-west-3c.internal:1000")
+    logstash1, _ := net.Dial("tcp", "logstash.eu-west-3a.internal:1000")
+    logstash2, _ := net.Dial("tcp", "logstash.eu-west-3b.internal:1000")
+    logstash3, _ := net.Dial("tcp", "logstash.eu-west-3c.internal:1000")
 
-	logger := slog.New(
-		slogmulti.Failover()(
-			slog.HandlerOptions{}.NewJSONHandler(logstash1, nil),    // send to this instance first
-			slog.HandlerOptions{}.NewJSONHandler(logstash2, nil),    // then this instance in case of failure
-			slog.HandlerOptions{}.NewJSONHandler(logstash3, nil),    // and finally this instance in case of double failure
-		),
-	)
+    logger := slog.New(
+        slogmulti.Failover()(
+            slog.HandlerOptions{}.NewJSONHandler(logstash1, nil),    // send to this instance first
+            slog.HandlerOptions{}.NewJSONHandler(logstash2, nil),    // then this instance in case of failure
+            slog.HandlerOptions{}.NewJSONHandler(logstash3, nil),    // and finally this instance in case of double failure
+        ),
+    )
 
-	logger.
-		With(
-			slog.Group("user",
-				slog.String("id", "user-123"),
-				slog.Time("created_at", time.Now()),
-			),
-		).
-		With("environment", "dev").
-		With("error", fmt.Errorf("an error")).
-		Error("A message")
+    logger.
+        With(
+            slog.Group("user",
+                slog.String("id", "user-123"),
+                slog.Time("created_at", time.Now()),
+            ),
+        ).
+        With("environment", "dev").
+        With("error", fmt.Errorf("an error")).
+        Error("A message")
 }
 ```
 
@@ -250,41 +251,41 @@ Increase log bandwidth by sending `log.Record` to a pool of `slog.Handler`.
 
 ```go
 import (
-	"net"
+    "net"
     slogmulti "github.com/samber/slog-multi"
     "log/slog"
 )
 
 func main() {
-	// ncat -l 1000 -k
-	// ncat -l 1001 -k
-	// ncat -l 1002 -k
+    // ncat -l 1000 -k
+    // ncat -l 1001 -k
+    // ncat -l 1002 -k
 
     // list AZs
     // use github.com/netbrain/goautosocket for auto-reconnect
-	logstash1, _ := net.Dial("tcp", "logstash.eu-west-3a.internal:1000")
-	logstash2, _ := net.Dial("tcp", "logstash.eu-west-3b.internal:1000")
-	logstash3, _ := net.Dial("tcp", "logstash.eu-west-3c.internal:1000")
+    logstash1, _ := net.Dial("tcp", "logstash.eu-west-3a.internal:1000")
+    logstash2, _ := net.Dial("tcp", "logstash.eu-west-3b.internal:1000")
+    logstash3, _ := net.Dial("tcp", "logstash.eu-west-3c.internal:1000")
 
-	logger := slog.New(
-		slogmulti.Pool()(
+    logger := slog.New(
+        slogmulti.Pool()(
             // a random handler will be picked
-			slog.HandlerOptions{}.NewJSONHandler(logstash1, nil),
-			slog.HandlerOptions{}.NewJSONHandler(logstash2, nil),
-			slog.HandlerOptions{}.NewJSONHandler(logstash3, nil),
-		),
-	)
+            slog.HandlerOptions{}.NewJSONHandler(logstash1, nil),
+            slog.HandlerOptions{}.NewJSONHandler(logstash2, nil),
+            slog.HandlerOptions{}.NewJSONHandler(logstash3, nil),
+        ),
+    )
 
-	logger.
-		With(
-			slog.Group("user",
-				slog.String("id", "user-123"),
-				slog.Time("created_at", time.Now()),
-			),
-		).
-		With("environment", "dev").
-		With("error", fmt.Errorf("an error")).
-		Error("A message")
+    logger.
+        With(
+            slog.Group("user",
+                slog.String("id", "user-123"),
+                slog.Time("created_at", time.Now()),
+            ),
+        ).
+        With("environment", "dev").
+        With("error", fmt.Errorf("an error")).
+        Error("A message")
 }
 ```
 
