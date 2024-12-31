@@ -363,6 +363,35 @@ The example above uses:
 
 Note: `WithAttrs` and `WithGroup` methods of custom middleware must return a new instance, instead of `this`.
 
+#### Inline handler
+
+An "inline handler" (aka. lambda), is a shortcut to handler implement, that hooks a single method and proxies others.
+
+```go
+mdw := slogmulti.NewHandleInlineHandler(
+    // simulate "Handle()"
+    func(ctx context.Context, groups []string, attrs []slog.Attr, record slog.Record) error {
+        // [...]
+        return nil
+    },
+)
+```
+
+```go
+mdw := slogmulti.NewInlineHandler(
+    // simulate "Enabled()"
+    func(ctx context.Context, groups []string, attrs []slog.Attr, level slog.Level) bool {
+        // [...]
+        return true
+    },
+    // simulate "Handle()"
+    func(ctx context.Context, groups []string, attrs []slog.Attr, record slog.Record) error {
+        // [...]
+        return nil
+    },
+)
+```
+
 #### Inline middleware
 
 An "inline middleware" (aka. lambda), is a shortcut to middleware implementation, that hooks a single method and proxies others.
