@@ -39,7 +39,7 @@ func (h *HandleInlineHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	newAttrs = append(newAttrs, h.attrs...)
 	newAttrs = append(newAttrs, attrs...)
 
-	return &InlineHandler{
+	return &HandleInlineHandler{
 		groups:     h.groups,
 		attrs:      newAttrs,
 		handleFunc: h.handleFunc,
@@ -56,7 +56,7 @@ func (h *HandleInlineHandler) WithGroup(name string) slog.Handler {
 	newGroups := []string{}
 	newGroups = append(newGroups, h.groups...)
 	newGroups = append(newGroups, name)
-	return &InlineHandler{
+	return &HandleInlineHandler{
 		groups:     newGroups,
 		attrs:      h.attrs,
 		handleFunc: h.handleFunc,
