@@ -9,6 +9,13 @@ import (
 // NewWithAttrsInlineMiddleware is a shortcut to a middleware that implements only the `WithAttrs` method.
 func NewWithAttrsInlineMiddleware(withAttrsFunc func(attrs []slog.Attr, next func([]slog.Attr) slog.Handler) slog.Handler) Middleware {
 	return func(next slog.Handler) slog.Handler {
+		if withAttrsFunc == nil {
+			panic("slog-multi: withAttrsFunc is required")
+		}
+		if next == nil {
+			panic("slog-multi: next is required")
+		}
+
 		return &WithAttrsInlineMiddleware{
 			next:          next,
 			withAttrsFunc: withAttrsFunc,

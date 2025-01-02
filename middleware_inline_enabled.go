@@ -9,6 +9,13 @@ import (
 // NewEnabledInlineMiddleware is shortcut to a middleware that implements only the `Enable` method.
 func NewEnabledInlineMiddleware(enabledFunc func(ctx context.Context, level slog.Level, next func(context.Context, slog.Level) bool) bool) Middleware {
 	return func(next slog.Handler) slog.Handler {
+		if enabledFunc == nil {
+			panic("slog-multi: enabledFunc is required")
+		}
+		if next == nil {
+			panic("slog-multi: next is required")
+		}
+
 		return &EnabledInlineMiddleware{
 			next:        next,
 			enabledFunc: enabledFunc,

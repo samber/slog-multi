@@ -14,6 +14,22 @@ func NewInlineMiddleware(
 	withGroupFunc func(name string, next func(string) slog.Handler) slog.Handler,
 ) Middleware {
 	return func(next slog.Handler) slog.Handler {
+		if next == nil {
+			panic("slog-multi: next is required")
+		}
+		if enabledFunc == nil {
+			panic("slog-multi: enabledFunc is required")
+		}
+		if handleFunc == nil {
+			panic("slog-multi: handleFunc is required")
+		}
+		if withAttrsFunc == nil {
+			panic("slog-multi: withAttrsFunc is required")
+		}
+		if withGroupFunc == nil {
+			panic("slog-multi: withGroupFunc is required")
+		}
+
 		return &InlineMiddleware{
 			next:          next,
 			enabledFunc:   enabledFunc,

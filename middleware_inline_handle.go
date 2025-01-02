@@ -9,6 +9,13 @@ import (
 // NewHandleInlineMiddleware is a shortcut to a middleware that implements only the `Handle` method.
 func NewHandleInlineMiddleware(handleFunc func(ctx context.Context, record slog.Record, next func(context.Context, slog.Record) error) error) Middleware {
 	return func(next slog.Handler) slog.Handler {
+		if next == nil {
+			panic("slog-multi: next is required")
+		}
+		if handleFunc == nil {
+			panic("slog-multi: handleFunc is required")
+		}
+
 		return &HandleInlineMiddleware{
 			next:       next,
 			handleFunc: handleFunc,
