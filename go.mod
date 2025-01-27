@@ -3,11 +3,8 @@ module github.com/samber/slog-multi
 go 1.21
 
 require (
-	github.com/samber/lo v1.47.0
+	github.com/samber/lo v1.49.0
 	go.uber.org/goleak v1.3.0
 )
 
-require (
-	github.com/stretchr/testify v1.8.2 // indirect
-	golang.org/x/text v0.18.0 // indirect
-)
+require golang.org/x/text v0.21.0 // indirect
