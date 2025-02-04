@@ -312,9 +312,9 @@ import (
 	"log/slog"
 )
 
-recovery := RecoverHandlerError(
+recovery := slogmulti.RecoverHandlerError(
     func(ctx context.Context, record slog.Record, err error) {
-        // will be called only if subsequent handlers fail and return an error
+        // will be called only if subsequent handlers fail or return an error
         log.Println(err.Error())
     },
 )
