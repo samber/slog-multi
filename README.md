@@ -11,15 +11,20 @@
 [![License](https://img.shields.io/github/license/samber/slog-multi)](./LICENSE)
 
 Design workflows of [slog](https://pkg.go.dev/log/slog) handlers:
-- **fanout**: distribute `log.Record` to multiple `slog.Handler` in parallel
-- **pipeline**: rewrite `log.Record` on the fly (eg: for privacy reason)
-- **routing**: forward `log.Record` to all matching `slog.Handler`
-- **failover**: forward `log.Record` to the first available `slog.Handler`
-- **load balancing**: increase log bandwidth by sending `log.Record` to a pool of `slog.Handler`
+- **Fanout**: distribute `log.Record` to multiple `slog.Handler` in parallel
+- **Pipe**: rewrite `log.Record` on the fly (eg: for privacy reasons)
+- **Router**: forward `log.Record` to all matching `slog.Handler`
+- **Failover**: forward `log.Record` to the first available `slog.Handler`
+- **Pool**: increase log bandwidth by sending `log.Record` to a pool of `slog.Handler`
+- **RecoverHandlerError**: catch panics and errors from handlers
 
-Here a simple workflow with both pipeline and fanout:
+Here is a simple workflow with both pipeline and fanout:
 
 ![workflow example with pipeline and fanout](./images/workflow.png)
+
+Middlewares:
+- [Inline handler](#inline-handler): a shortcut to implement `slog.Handler`
+- [Inline middleware](#inline-middleware): a shortcut to implement `slogmulti.Middleware`
 
 <div align="center">
   <hr>
@@ -35,18 +40,6 @@ Here a simple workflow with both pipeline and fanout:
   </a>
   <hr>
 </div>
-
-**Routing:**
-- [Fanout](#broadcast-slogmultifanout): distributes records to multiple `slog.Handler` in parallel
-- [Router](#routing-slogmultirouter): forwards records to all matching `slog.Handler`
-- [Failover](#failover-slogmultifailover): forwards records to the first available `slog.Handler`
-- [Load balancing](#load-balancing-slogmultipool): balances records between multiple `slog.Handler`
-- [Chaining / Pipe](#chaining-slogmultipipe): builds a chain of Middleware
-- [Recover handler error](#recover-errors-RecoverHandlerError): catch panics and error from handlers
-
-**Middlewares:**
-- [Inline handler](#inline-handler): a shortcut to implement `slog.Handler`
-- [Inline middleware](#inline-middleware): a shortcut to implment `slogmulti.Middleware`
 
 **See also:**
 
