@@ -10,7 +10,7 @@ type router struct {
 	handlers []slog.Handler
 }
 
-// Router forward record to all matching slog.Handler.
+// Router forwards records to all matching slog.Handler.
 func Router() *router {
 	return &router{
 		handlers: []slog.Handler{},

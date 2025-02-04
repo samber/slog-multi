@@ -15,7 +15,7 @@ type FailoverHandler struct {
 	handlers []slog.Handler
 }
 
-// Failover forward record to the first available slog.Handler
+// Failover forwards records to the first available slog.Handler
 func Failover() func(...slog.Handler) slog.Handler {
 	return func(handlers ...slog.Handler) slog.Handler {
 		return &FailoverHandler{
