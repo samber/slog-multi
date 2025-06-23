@@ -96,6 +96,8 @@ No breaking changes will be made to exported APIs before v2.0.0.
 
 > [!WARNING]
 > Use this library carefully, log processing can be very costly (!)
+> 
+> Excessive logging —with multiple processing steps and destinations— can introduce significant overhead, which is generally undesirable in performance-critical paths. Sometimes, metrics or a sampling strategy are cheaper.
 
 ## 💡 Usage
 
