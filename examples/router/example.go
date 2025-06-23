@@ -33,6 +33,7 @@ func main() {
 
 	logger := slog.New(
 		slogmulti.Router().
+			// Add(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{}), recordMatchRegion("us")).
 			Add(slackChannelUS, recordMatchRegion("us")).
 			Add(slackChannelEU, recordMatchRegion("eu")).
 			Add(slackChannelAPAC, recordMatchRegion("apac")).
@@ -41,6 +42,7 @@ func main() {
 
 	logger.
 		With("region", "us").
+		WithGroup("group1").
 		With("pool", "us-west-1").
 		Error("Server desynchronized")
 }

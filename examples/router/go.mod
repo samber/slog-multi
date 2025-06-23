@@ -9,8 +9,10 @@ require (
 
 require (
 	github.com/gorilla/websocket v1.4.2 // indirect
-	github.com/samber/lo v1.47.0 // indirect
+	github.com/samber/lo v1.51.0 // indirect
+	github.com/samber/slog-common v0.19.0 // indirect
 	github.com/slack-go/slack v0.12.1 // indirect
-	golang.org/x/text v0.16.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
+	golang.org/x/text v0.22.0 // indirect
 )
+
+replace github.com/samber/slog-multi => ../../

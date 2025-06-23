@@ -2,8 +2,11 @@ package slogmulti
 
 import (
 	"context"
+	"slices"
 
 	"log/slog"
+
+	slogcommon "github.com/samber/slog-common"
 )
 
 type router struct {
@@ -25,6 +28,8 @@ func (h *router) Add(handler slog.Handler, matchers ...func(ctx context.Context,
 			&RoutableHandler{
 				matchers: matchers,
 				handler:  handler,
+				groups:   []string{},
+				attrs:    []slog.Attr{},
 			},
 		),
 	}
@@ -40,6 +45,8 @@ var _ slog.Handler = (*RoutableHandler)(nil)
 type RoutableHandler struct {
 	matchers []func(ctx context.Context, r slog.Record) bool
 	handler  slog.Handler
+	groups   []string
+	attrs    []slog.Attr
 }
 
 // Implements slog.Handler
@@ -49,8 +56,13 @@ func (h *RoutableHandler) Enabled(ctx context.Context, l slog.Level) bool {
 
 // Implements slog.Handler
 func (h *RoutableHandler) Handle(ctx context.Context, r slog.Record) error {
+	clone := slog.NewRecord(r.Time, r.Level, r.Message, r.PC)
+	clone.AddAttrs(
+		slogcommon.AppendRecordAttrsToAttrs(h.attrs, h.groups, &r)...,
+	)
+
 	for _, matcher := range h.matchers {
-		if !matcher(ctx, r) {
+		if !matcher(ctx, clone) {
 			return nil
 		}
 	}
@@ -63,6 +75,8 @@ func (h *RoutableHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	return &RoutableHandler{
 		matchers: h.matchers,
 		handler:  h.handler.WithAttrs(attrs),
+		groups:   slices.Clone(h.groups),
+		attrs:    slogcommon.AppendAttrsToGroup(h.groups, h.attrs, attrs...),
 	}
 }
 
@@ -76,5 +90,7 @@ func (h *RoutableHandler) WithGroup(name string) slog.Handler {
 	return &RoutableHandler{
 		matchers: h.matchers,
 		handler:  h.handler.WithGroup(name),
+		groups:   append(slices.Clone(h.groups), name),
+		attrs:    h.attrs,
 	}
 }
