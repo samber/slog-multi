@@ -1,4 +1,4 @@
-# slog-multi: Advanced Handler Composition for Go's Structured Logging (chaining, fanout, routing, failover...)
+# slog-multi: Advanced Handler Composition for Go's Structured Logging (pipelining, fanout, routing, failover...)
 
 [![tag](https://img.shields.io/github/tag/samber/slog-multi.svg)](https://github.com/samber/slog-multi/releases)
 ![Go Version](https://img.shields.io/badge/Go-%3E%3D%201.21-%23007d9c)
