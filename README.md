@@ -191,7 +191,7 @@ func main() {
             Add(slackChannelUS, recordMatchRegion("us")).
             Add(slackChannelEU, recordMatchRegion("eu")).
             Add(slackChannelAPAC, recordMatchRegion("apac")).
-            Add(consoleHandler, slogmulti.Level(slog.LevelInfo)).
+            Add(consoleHandler, slogmulti.LevelIs(slog.LevelInfo, slog.LevelDebug)).
             Handler(),
     )
 

@@ -19,8 +19,8 @@ type router struct {
 // Example usage:
 //
 //	r := slogmulti.Router().
-//	    Add(consoleHandler, slogmulti.Level(slog.LevelInfo)).
-//	    Add(fileHandler, slogmulti.Level(slog.LevelError)).
+//	    Add(consoleHandler, slogmulti.MatchLevel(slog.LevelInfo)).
+//	    Add(fileHandler, slogmulti.MatchLevel(slog.LevelError)).
 //	    Handler()
 //
 // Returns:
@@ -32,26 +32,26 @@ func Router() *router {
 	}
 }
 
-// Add registers a new handler with optional matchers to the router.
-// The handler will only process records if all provided matchers return true.
+// Add registers a new handler with optional predicates to the router.
+// The handler will only process records if all provided predicates return true.
 //
 // Args:
 //
 //	handler: The slog.Handler to register
-//	matchers: Optional functions that determine if a record should be routed to this handler
+//	predicates: Optional functions that determine if a record should be routed to this handler
 //
 // Returns:
 //
 //	The router instance for method chaining
-func (h *router) Add(handler slog.Handler, matchers ...func(ctx context.Context, r slog.Record) bool) *router {
+func (h *router) Add(handler slog.Handler, predicates ...func(ctx context.Context, r slog.Record) bool) *router {
 	return &router{
 		handlers: append(
 			h.handlers,
 			&RoutableHandler{
-				matchers: matchers,
-				handler:  handler,
-				groups:   []string{},
-				attrs:    []slog.Attr{},
+				predicates: predicates,
+				handler:    handler,
+				groups:     []string{},
+				attrs:      []slog.Attr{},
 			},
 		),
 	}
@@ -72,13 +72,13 @@ func (h *router) Handler() slog.Handler {
 var _ slog.Handler = (*RoutableHandler)(nil)
 
 // RoutableHandler wraps a slog.Handler with conditional matching logic.
-// It only forwards records to the underlying handler if all matchers return true.
+// It only forwards records to the underlying handler if all predicates return true.
 // This enables sophisticated routing scenarios like level-based or attribute-based routing.
 //
 // @TODO: implement round robin strategy for load balancing across multiple handlers
 type RoutableHandler struct {
-	// matchers contains functions that determine if a record should be processed
-	matchers []func(ctx context.Context, r slog.Record) bool
+	// predicates contains functions that determine if a record should be processed
+	predicates []func(ctx context.Context, r slog.Record) bool
 	// handler is the underlying slog.Handler that processes matching records
 	handler slog.Handler
 	// groups tracks the current group hierarchy for proper attribute handling
@@ -102,7 +102,7 @@ func (h *RoutableHandler) Enabled(ctx context.Context, l slog.Level) bool {
 	return h.handler.Enabled(ctx, l)
 }
 
-// Handle processes a log record if all matchers return true.
+// Handle processes a log record if all predicates return true.
 // This method implements the slog.Handler interface requirement.
 //
 // Args:
@@ -119,8 +119,8 @@ func (h *RoutableHandler) Handle(ctx context.Context, r slog.Record) error {
 		slogcommon.AppendRecordAttrsToAttrs(h.attrs, h.groups, &r)...,
 	)
 
-	for _, matcher := range h.matchers {
-		if !matcher(ctx, clone) {
+	for _, predicate := range h.predicates {
+		if !predicate(ctx, clone) {
 			return nil
 		}
 	}
@@ -143,10 +143,10 @@ func (h *RoutableHandler) Handle(ctx context.Context, r slog.Record) error {
 //	A new RoutableHandler with the additional attributes
 func (h *RoutableHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	return &RoutableHandler{
-		matchers: h.matchers,
-		handler:  h.handler.WithAttrs(attrs),
-		groups:   slices.Clone(h.groups),
-		attrs:    slogcommon.AppendAttrsToGroup(h.groups, h.attrs, attrs...),
+		predicates: h.predicates,
+		handler:    h.handler.WithAttrs(attrs),
+		groups:     slices.Clone(h.groups),
+		attrs:      slogcommon.AppendAttrsToGroup(h.groups, h.attrs, attrs...),
 	}
 }
 
@@ -171,9 +171,9 @@ func (h *RoutableHandler) WithGroup(name string) slog.Handler {
 	}
 
 	return &RoutableHandler{
-		matchers: h.matchers,
-		handler:  h.handler.WithGroup(name),
-		groups:   append(slices.Clone(h.groups), name),
-		attrs:    h.attrs,
+		predicates: h.predicates,
+		handler:    h.handler.WithGroup(name),
+		groups:     append(slices.Clone(h.groups), name),
+		attrs:      h.attrs,
 	}
 }
