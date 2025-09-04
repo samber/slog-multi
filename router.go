@@ -19,8 +19,8 @@ type router struct {
 // Example usage:
 //
 //	r := slogmulti.Router().
-//	    Add(consoleHandler, slogmulti.MatchLevel(slog.LevelInfo)).
-//	    Add(fileHandler, slogmulti.MatchLevel(slog.LevelError)).
+//	    Add(consoleHandler, slogmulti.LevelIs(slog.LevelInfo)).
+//	    Add(fileHandler, slogmulti.LevelIs(slog.LevelError)).
 //	    Handler()
 //
 // Returns:
