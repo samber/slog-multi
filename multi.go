@@ -21,6 +21,7 @@ type FanoutHandler struct {
 }
 
 // Fanout creates a new FanoutHandler that distributes records to multiple slog.Handler instances.
+// If exactly one handler is provided, it returns that handler unmodified.
 // This function is the primary entry point for creating a multi-handler setup.
 //
 // Example usage:
@@ -39,6 +40,9 @@ type FanoutHandler struct {
 //
 //	A slog.Handler that forwards all operations to the provided handlers
 func Fanout(handlers ...slog.Handler) slog.Handler {
+	if len(handlers) == 1 {
+		return handlers[0]
+	}
 	return &FanoutHandler{
 		handlers: handlers,
 	}
