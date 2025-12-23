@@ -22,9 +22,9 @@ func main() {
 
 	logger := slog.New(
 		slogmulti.Router().
+			Add(influxdbChannel, slogmulti.AttrIs("scope", "influx")).
 			Add(queryChannel, slogmulti.AttrKeyTypeIs("query", slog.KindString, "args", slog.KindAny)).
 			Add(requestChannel, slogmulti.AttrKeyTypeIs("method", slog.KindString, "body", slog.KindAny)).
-			Add(influxdbChannel, slogmulti.AttrIs("scope", "influx")).
 			Add(fallbackChannel).
 			FirstMatch().
 			Handler(),
@@ -35,6 +35,7 @@ func main() {
 	logger.Error("An unexpected error occurred")
 
 	influxLogger := logger.With("scope", "influx")
-	_ = influxLogger
+
 	// influx.NewClient(influxLogger) ...
+	influxLogger.Info("InfluxDB client initialized")
 }

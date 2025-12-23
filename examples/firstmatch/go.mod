@@ -1,4 +1,4 @@
-module github.com/samber/slog-multi/examples/router
+module github.com/samber/slog-multi/examples/firstmatch
 
 go 1.21
 

@@ -2,6 +2,7 @@ package slogmulti
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"slices"
 
@@ -69,7 +70,11 @@ func (h *router) Add(handler slog.Handler, predicates ...func(ctx context.Contex
 func (h *router) Handler() slog.Handler {
 	if h.firstMatch {
 		return FirstMatch(lo.Map(h.handlers, func(h slog.Handler, _ int) *RoutableHandler {
-			return h.(*RoutableHandler)
+			rh, ok := h.(*RoutableHandler)
+			if !ok {
+				panic(fmt.Sprintf("expected *RoutableHandler, got %T", h))
+			}
+			return rh
 		})...)
 	} else {
 		return Fanout(h.handlers...)
@@ -100,8 +105,8 @@ type RoutableHandler struct {
 	groups []string
 	// attrs contains accumulated attributes that should be added to records
 	attrs []slog.Attr
-	// skipMatchCheck indicates the caller MUST call IsMatch(ctx, record) and MUST NOT invoke the handler for a given record if IsMatch returns false.
-	skipMatchCheck bool
+	// skipPredicates indicates the caller MUST call IsMatch(ctx, record) and MUST NOT invoke the handler for a given record if IsMatch returns false.
+	skipPredicates bool
 }
 
 // Enabled checks if the underlying handler is enabled for the given log level.
@@ -131,7 +136,7 @@ func (h *RoutableHandler) Enabled(ctx context.Context, l slog.Level) bool {
 //
 //	An error if the underlying handler failed to process the record, nil otherwise
 func (h *RoutableHandler) Handle(ctx context.Context, r slog.Record) error {
-	if h.skipMatchCheck || h.IsMatch(ctx, r) {
+	if h.skipPredicates || h.IsMatch(ctx, r) {
 		return h.handler.Handle(ctx, r)
 	}
 

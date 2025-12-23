@@ -142,6 +142,21 @@ func MessageNotContains(part string) func(ctx context.Context, r slog.Record) bo
 	}
 }
 
+// AttrIs returns a function that checks if the record has all specified attributes with exact values.
+// Example usage:
+//
+//	r := slogmulti.Router().
+//	    Add(consoleHandler, slogmulti.AttrIs("scope", "influx")).
+//	    Add(fileHandler, slogmulti.AttrIs("env", "production", "region", "us-east")).
+//	    Handler()
+//
+// Args:
+//
+//	args: Pairs of attribute key (string) and expected value (any)
+//
+// Returns:
+//
+//	A function that checks if the record has all specified attributes with exact values
 func AttrIs(args ...any) func(ctx context.Context, r slog.Record) bool {
 	m := map[string]any{}
 	for i := 0; i < len(args); i += 2 {
@@ -154,18 +169,17 @@ func AttrIs(args ...any) func(ctx context.Context, r slog.Record) bool {
 	}
 
 	return func(ctx context.Context, r slog.Record) bool {
-		var found bool
+		count := 0
 		r.Attrs(func(attr slog.Attr) bool {
-			if v, ok := m[attr.Key]; ok {
-				if attr.Value.Any() == v {
-					found = true
-					return false
+			if v, ok := m[attr.Key]; ok && attr.Value.Any() == v {
+				count++
+				if count == len(m) {
+					return false // early exit
 				}
 			}
-
 			return true
 		})
-		return found
+		return count == len(m)
 	}
 }
 
@@ -197,17 +211,16 @@ func AttrKeyTypeIs(args ...any) func(ctx context.Context, r slog.Record) bool {
 	}
 
 	return func(ctx context.Context, r slog.Record) bool {
-		var found bool
+		count := 0
 		r.Attrs(func(attr slog.Attr) bool {
-			if ty, ok := m[attr.Key]; ok {
-				if attr.Value.Kind() == ty {
-					found = true
-					return false
+			if ty, ok := m[attr.Key]; ok && attr.Value.Kind() == ty {
+				count++
+				if count == len(m) {
+					return false // early exit
 				}
 			}
-
 			return true
 		})
-		return found
+		return count == len(m)
 	}
 }

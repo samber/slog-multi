@@ -17,7 +17,7 @@ type FirstMatchHandler struct {
 
 func FirstMatch(handlers ...*RoutableHandler) *FirstMatchHandler {
 	for _, h := range handlers {
-		h.skipMatchCheck = true
+		h.skipPredicates = true // prevent double matching
 	}
 	return &FirstMatchHandler{handlers: handlers}
 }
