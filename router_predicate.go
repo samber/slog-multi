@@ -141,3 +141,73 @@ func MessageNotContains(part string) func(ctx context.Context, r slog.Record) bo
 		return !strings.Contains(r.Message, part)
 	}
 }
+
+func AttrIs(args ...any) func(ctx context.Context, r slog.Record) bool {
+	m := map[string]any{}
+	for i := 0; i < len(args); i += 2 {
+		key, ok1 := args[i].(string)
+		value := args[i+1]
+		if !ok1 {
+			continue
+		}
+		m[key] = value
+	}
+
+	return func(ctx context.Context, r slog.Record) bool {
+		var found bool
+		r.Attrs(func(attr slog.Attr) bool {
+			if v, ok := m[attr.Key]; ok {
+				if attr.Value.Any() == v {
+					found = true
+					return false
+				}
+			}
+
+			return true
+		})
+		return found
+	}
+}
+
+// AttrKeyTypeIs returns a function that checks if the record has an attribute with the given key and type.
+// Example usage:
+//
+//	r := slogmulti.Router().
+//	    Add(consoleHandler, slogmulti.AttrKeyTypeIs("user_id", slog.KindString)).
+//	    Add(fileHandler, slogmulti.AttrKeyTypeIs("user_id", slog.KindString)).
+//	    Handler()
+//
+// Args:
+//
+//	key: The attribute key to check
+//	ty: The attribute type to check
+//
+// Returns:
+//
+//	A function that checks if the record has an attribute with the given key and type
+func AttrKeyTypeIs(args ...any) func(ctx context.Context, r slog.Record) bool {
+	m := map[string]slog.Kind{}
+	for i := 0; i < len(args); i += 2 {
+		key, ok1 := args[i].(string)
+		ty, ok2 := args[i+1].(slog.Kind)
+		if !ok1 || !ok2 {
+			continue
+		}
+		m[key] = ty
+	}
+
+	return func(ctx context.Context, r slog.Record) bool {
+		var found bool
+		r.Attrs(func(attr slog.Attr) bool {
+			if ty, ok := m[attr.Key]; ok {
+				if attr.Value.Kind() == ty {
+					found = true
+					return false
+				}
+			}
+
+			return true
+		})
+		return found
+	}
+}

@@ -3,10 +3,13 @@ package slogmulti
 import (
 	"context"
 	"log/slog"
+
+	"github.com/samber/lo"
 )
 
 type router struct {
-	handlers []slog.Handler
+	handlers   []slog.Handler
+	firstMatch bool
 }
 
 // Router creates a new router instance for building conditional log routing.
@@ -24,7 +27,8 @@ type router struct {
 //	A new router instance ready for configuration
 func Router() *router {
 	return &router{
-		handlers: []slog.Handler{},
+		handlers:   []slog.Handler{},
+		firstMatch: false,
 	}
 }
 
@@ -61,5 +65,18 @@ func (h *router) Add(handler slog.Handler, predicates ...func(ctx context.Contex
 //
 //	A slog.Handler that implements the routing logic
 func (h *router) Handler() slog.Handler {
-	return Fanout(h.handlers...)
+	if h.firstMatch {
+		return FirstMatch(lo.Map(h.handlers, func(h slog.Handler, _ int) *RoutableHandler {
+			return h.(*RoutableHandler)
+		})...)
+	} else {
+		return Fanout(h.handlers...)
+	}
+}
+
+func (h *router) FirstMatch() *router {
+	return &router{
+		handlers:   h.handlers,
+		firstMatch: true,
+	}
 }
