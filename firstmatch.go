@@ -53,8 +53,10 @@ func (h *FirstMatchHandler) Handle(ctx context.Context, r slog.Record) error {
 	for i := range h.handlers {
 		clone, ok := h.handlers[i].isMatch(ctx, r)
 		if ok {
-			if h.handlers[i].Enabled(ctx, r.Level) {
-				return h.handlers[i].Handle(ctx, clone)
+			if h.handlers[i].Enabled(ctx, clone.Level) {
+				return try(func() error {
+					return h.handlers[i].Handle(ctx, clone)
+				})
 			}
 
 			return nil // Handler matched but is not enabled; do not proceed further
