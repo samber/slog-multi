@@ -51,10 +51,11 @@ func (h *router) Add(handler slog.Handler, predicates ...func(ctx context.Contex
 		handlers: append(
 			h.handlers,
 			&RoutableHandler{
-				predicates: predicates,
-				handler:    handler,
-				groups:     []string{},
-				attrs:      []slog.Attr{},
+				predicates:     predicates,
+				handler:        handler,
+				groups:         []string{},
+				attrs:          []slog.Attr{},
+				skipPredicates: false,
 			},
 		),
 		firstMatch: h.firstMatch,
@@ -174,10 +175,11 @@ func (h *RoutableHandler) isMatch(ctx context.Context, r slog.Record) bool {
 //	A new RoutableHandler with the additional attributes
 func (h *RoutableHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	return &RoutableHandler{
-		predicates: h.predicates,
-		handler:    h.handler.WithAttrs(attrs),
-		groups:     slices.Clone(h.groups),
-		attrs:      slogcommon.AppendAttrsToGroup(h.groups, h.attrs, attrs...),
+		predicates:     h.predicates,
+		handler:        h.handler.WithAttrs(attrs),
+		groups:         slices.Clone(h.groups),
+		attrs:          slogcommon.AppendAttrsToGroup(h.groups, h.attrs, attrs...),
+		skipPredicates: h.skipPredicates,
 	}
 }
 
@@ -202,9 +204,10 @@ func (h *RoutableHandler) WithGroup(name string) slog.Handler {
 	}
 
 	return &RoutableHandler{
-		predicates: h.predicates,
-		handler:    h.handler.WithGroup(name),
-		groups:     append(slices.Clone(h.groups), name),
-		attrs:      h.attrs,
+		predicates:     h.predicates,
+		handler:        h.handler.WithGroup(name),
+		groups:         append(slices.Clone(h.groups), name),
+		attrs:          h.attrs,
+		skipPredicates: h.skipPredicates,
 	}
 }
