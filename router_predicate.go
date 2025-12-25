@@ -142,12 +142,12 @@ func MessageNotContains(part string) func(ctx context.Context, r slog.Record) bo
 	}
 }
 
-// AttrIs returns a function that checks if the record has all specified attributes with exact values.
+// AttrValueIs returns a function that checks if the record has all specified attributes with exact values.
 // Example usage:
 //
 //	r := slogmulti.Router().
-//	    Add(consoleHandler, slogmulti.AttrIs("scope", "influx")).
-//	    Add(fileHandler, slogmulti.AttrIs("env", "production", "region", "us-east")).
+//	    Add(consoleHandler, slogmulti.AttrValueIs("scope", "influx")).
+//	    Add(fileHandler, slogmulti.AttrValueIs("env", "production", "region", "us-east")).
 //	    Handler()
 //
 // Args:
@@ -157,7 +157,7 @@ func MessageNotContains(part string) func(ctx context.Context, r slog.Record) bo
 // Returns:
 //
 //	A function that checks if the record has all specified attributes with exact values
-func AttrIs(args ...any) func(ctx context.Context, r slog.Record) bool {
+func AttrValueIs(args ...any) func(ctx context.Context, r slog.Record) bool {
 	m := map[string]any{}
 	for i := 0; i < len(args); i += 2 {
 		key, ok1 := args[i].(string)
@@ -183,12 +183,12 @@ func AttrIs(args ...any) func(ctx context.Context, r slog.Record) bool {
 	}
 }
 
-// AttrKeyTypeIs returns a function that checks if the record has an attribute with the given key and type.
+// AttrKindIs returns a function that checks if the record has an attribute with the given key and type.
 // Example usage:
 //
 //	r := slogmulti.Router().
-//	    Add(consoleHandler, slogmulti.AttrKeyTypeIs("user_id", slog.KindString)).
-//	    Add(fileHandler, slogmulti.AttrKeyTypeIs("user_id", slog.KindString)).
+//	    Add(consoleHandler, slogmulti.AttrKindIs("user_id", slog.KindString)).
+//	    Add(fileHandler, slogmulti.AttrKindIs("user_id", slog.KindString)).
 //	    Handler()
 //
 // Args:
@@ -199,7 +199,7 @@ func AttrIs(args ...any) func(ctx context.Context, r slog.Record) bool {
 // Returns:
 //
 //	A function that checks if the record has an attribute with the given key and type
-func AttrKeyTypeIs(args ...any) func(ctx context.Context, r slog.Record) bool {
+func AttrKindIs(args ...any) func(ctx context.Context, r slog.Record) bool {
 	m := map[string]slog.Kind{}
 	for i := 0; i < len(args); i += 2 {
 		key, ok1 := args[i].(string)

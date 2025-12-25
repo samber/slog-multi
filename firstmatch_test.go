@@ -21,7 +21,7 @@ func TestFirstMatch(t *testing.T) {
 		})
 
 		handler := Router().
-			Add(queryH, AttrKeyTypeIs("query", slog.KindString, "args", slog.KindAny)).
+			Add(queryH, AttrKindIs("query", slog.KindString, "args", slog.KindAny)).
 			Add(otherH).
 			FirstMatch().
 			Handler()
@@ -80,9 +80,9 @@ func TestFirstMatch(t *testing.T) {
 		h3 := slog.NewJSONHandler(&buf3, nil)
 
 		handler := Router().
-			Add(h1, AttrIs("type", "error")).
-			Add(h2, AttrIs("type", "error")).  // Also matches, but should not receive
-			Add(h3).                            // Catch-all
+			Add(h1, AttrValueIs("type", "error")).
+			Add(h2, AttrValueIs("type", "error")). // Also matches, but should not receive
+			Add(h3).                               // Catch-all
 			FirstMatch().
 			Handler()
 

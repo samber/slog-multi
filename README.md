@@ -249,9 +249,9 @@ func main() {
 
     logger := slog.New(
         slogmulti.Router().
-            Add(queryChannel, slogmulti.AttrKeyTypeIs("query", slog.KindString, "args", slog.KindAny)).
-            Add(requestChannel, slogmulti.AttrKeyTypeIs("method", slog.KindString, "body", slog.KindAny)).
-            Add(influxdbChannel, slogmulti.AttrIs("scope", "influx")).
+            Add(queryChannel, slogmulti.AttrKindIs("query", slog.KindString, "args", slog.KindAny)).
+            Add(requestChannel, slogmulti.AttrKindIs("method", slog.KindString, "body", slog.KindAny)).
+            Add(influxdbChannel, slogmulti.AttrValueIs("scope", "influx")).
             Add(fallbackChannel).  // Catch-all for everything else
             FirstMatch().           // ← Enable first-match routing
             Handler(),
@@ -289,13 +289,13 @@ func main() {
 - `MessageNotContains(part string)` - Message doesn't contain substring
 
 **Attribute predicates:**
-- `AttrIs(key, value, ...)` - Check attributes have exact values
+- `AttrValueIs(key, value, ...)` - Check attributes have exact values
   ```go
-  slogmulti.AttrIs("scope", "influx", "env", "production")
+  slogmulti.AttrValueIs("scope", "influx", "env", "production")
   ```
-- `AttrKeyTypeIs(key, kind, ...)` - Check attributes have specific types
+- `AttrKindIs(key, kind, ...)` - Check attributes have specific types
   ```go
-  slogmulti.AttrKeyTypeIs("query", slog.KindString, "args", slog.KindAny)
+  slogmulti.AttrKindIs("query", slog.KindString, "args", slog.KindAny)
   ```
 
 **Custom predicates:**

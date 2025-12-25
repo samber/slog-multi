@@ -22,9 +22,9 @@ func main() {
 
 	logger := slog.New(
 		slogmulti.Router().
-			Add(influxdbChannel, slogmulti.AttrIs("scope", "influx")).
-			Add(queryChannel, slogmulti.AttrKeyTypeIs("query", slog.KindString, "args", slog.KindAny)).
-			Add(requestChannel, slogmulti.AttrKeyTypeIs("method", slog.KindString, "body", slog.KindAny)).
+			Add(influxdbChannel, slogmulti.AttrValueIs("scope", "influx")).
+			Add(queryChannel, slogmulti.AttrKindIs("query", slog.KindString, "args", slog.KindAny)).
+			Add(requestChannel, slogmulti.AttrKindIs("method", slog.KindString, "body", slog.KindAny)).
 			Add(fallbackChannel).
 			FirstMatch().
 			Handler(),
