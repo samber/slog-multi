@@ -138,14 +138,23 @@ func (h *RoutableHandler) Enabled(ctx context.Context, l slog.Level) bool {
 //
 //	An error if the underlying handler failed to process the record, nil otherwise
 func (h *RoutableHandler) Handle(ctx context.Context, r slog.Record) error {
-	if h.skipPredicates || h.isMatch(ctx, r) {
-		return h.handler.Handle(ctx, r)
+	if h.skipPredicates {
+		clone := slog.NewRecord(r.Time, r.Level, r.Message, r.PC)
+		clone.AddAttrs(
+			slogcommon.AppendRecordAttrsToAttrs(h.attrs, h.groups, &r)...,
+		)
+		return h.handler.Handle(ctx, clone)
+	} else {
+		clone, ok := h.isMatch(ctx, r)
+		if ok {
+			return h.handler.Handle(ctx, clone)
+		}
 	}
 
 	return nil
 }
 
-func (h *RoutableHandler) isMatch(ctx context.Context, r slog.Record) bool {
+func (h *RoutableHandler) isMatch(ctx context.Context, r slog.Record) (slog.Record, bool) {
 	clone := slog.NewRecord(r.Time, r.Level, r.Message, r.PC)
 	clone.AddAttrs(
 		slogcommon.AppendRecordAttrsToAttrs(h.attrs, h.groups, &r)...,
@@ -153,11 +162,11 @@ func (h *RoutableHandler) isMatch(ctx context.Context, r slog.Record) bool {
 
 	for _, predicate := range h.predicates {
 		if !predicate(ctx, clone) {
-			return false
+			return clone, false
 		}
 	}
 
-	return true
+	return clone, true
 }
 
 // WithAttrs creates a new RoutableHandler with additional attributes.
