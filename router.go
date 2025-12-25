@@ -57,6 +57,7 @@ func (h *router) Add(handler slog.Handler, predicates ...func(ctx context.Contex
 				attrs:      []slog.Attr{},
 			},
 		),
+		firstMatch: h.firstMatch,
 	}
 }
 
