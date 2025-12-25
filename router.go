@@ -105,7 +105,7 @@ type RoutableHandler struct {
 	groups []string
 	// attrs contains accumulated attributes that should be added to records
 	attrs []slog.Attr
-	// skipPredicates indicates the caller MUST call IsMatch(ctx, record) and MUST NOT invoke the handler for a given record if IsMatch returns false.
+	// skipPredicates indicates the caller MUST call isMatch(ctx, record) and MUST NOT invoke the handler for a given record if isMatch returns false.
 	skipPredicates bool
 }
 
@@ -136,14 +136,14 @@ func (h *RoutableHandler) Enabled(ctx context.Context, l slog.Level) bool {
 //
 //	An error if the underlying handler failed to process the record, nil otherwise
 func (h *RoutableHandler) Handle(ctx context.Context, r slog.Record) error {
-	if h.skipPredicates || h.IsMatch(ctx, r) {
+	if h.skipPredicates || h.isMatch(ctx, r) {
 		return h.handler.Handle(ctx, r)
 	}
 
 	return nil
 }
 
-func (h *RoutableHandler) IsMatch(ctx context.Context, r slog.Record) bool {
+func (h *RoutableHandler) isMatch(ctx context.Context, r slog.Record) bool {
 	clone := slog.NewRecord(r.Time, r.Level, r.Message, r.PC)
 	clone.AddAttrs(
 		slogcommon.AppendRecordAttrsToAttrs(h.attrs, h.groups, &r)...,

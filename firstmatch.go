@@ -46,7 +46,7 @@ func (h *FirstMatchHandler) Enabled(ctx context.Context, l slog.Level) bool {
 // 5. If no handlers match, it returns nil.
 func (h *FirstMatchHandler) Handle(ctx context.Context, r slog.Record) error {
 	for i := range h.handlers {
-		if h.handlers[i].IsMatch(ctx, r) {
+		if h.handlers[i].isMatch(ctx, r) {
 			if h.handlers[i].Enabled(ctx, r.Level) {
 				return h.handlers[i].Handle(ctx, r.Clone())
 			}
