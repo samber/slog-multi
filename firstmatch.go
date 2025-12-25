@@ -73,7 +73,7 @@ func (h *FirstMatchHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	handlers := lo.Map(h.handlers, func(h *RoutableHandler, _ int) *RoutableHandler {
 		return h.WithAttrs(slices.Clone(attrs)).(*RoutableHandler)
 	})
-	return FirstMatch(handlers...)
+	return newFirstMatch(handlers...)
 }
 
 // WithGroup creates a new FirstMatchHandler with a group name applied to all child handlers.
@@ -88,5 +88,9 @@ func (h *FirstMatchHandler) WithGroup(name string) slog.Handler {
 	handlers := lo.Map(h.handlers, func(h *RoutableHandler, _ int) *RoutableHandler {
 		return h.WithGroup(name).(*RoutableHandler)
 	})
-	return FirstMatch(handlers...)
+	return newFirstMatch(handlers...)
+}
+
+func newFirstMatch(handlers ...*RoutableHandler) *FirstMatchHandler {
+	return &FirstMatchHandler{handlers: handlers}
 }
