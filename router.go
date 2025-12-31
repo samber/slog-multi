@@ -76,7 +76,7 @@ func (h *router) Handler() slog.Handler {
 			if !ok {
 				panic(fmt.Sprintf("expected *RoutableHandler, got %T", h))
 			}
-			return rh
+			return &(*rh)
 		})...)
 	} else {
 		return Fanout(h.handlers...)
@@ -139,15 +139,11 @@ func (h *RoutableHandler) Enabled(ctx context.Context, l slog.Level) bool {
 //	An error if the underlying handler failed to process the record, nil otherwise
 func (h *RoutableHandler) Handle(ctx context.Context, r slog.Record) error {
 	if h.skipPredicates {
-		clone := slog.NewRecord(r.Time, r.Level, r.Message, r.PC)
-		clone.AddAttrs(
-			slogcommon.AppendRecordAttrsToAttrs(h.attrs, h.groups, &r)...,
-		)
-		return h.handler.Handle(ctx, clone)
+		return h.handler.Handle(ctx, r)
 	} else {
-		clone, ok := h.isMatch(ctx, r)
+		_, ok := h.isMatch(ctx, r)
 		if ok {
-			return h.handler.Handle(ctx, clone)
+			return h.handler.Handle(ctx, r)
 		}
 	}
 

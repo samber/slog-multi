@@ -158,12 +158,15 @@ func MessageNotContains(part string) func(ctx context.Context, r slog.Record) bo
 //
 //	A function that checks if the record has all specified attributes with exact values
 func AttrValueIs(args ...any) func(ctx context.Context, r slog.Record) bool {
+	if len(args)%2 != 0 {
+		panic("AttrValueIs requires key/value pairs")
+	}
 	m := map[string]any{}
 	for i := 0; i < len(args); i += 2 {
 		key, ok1 := args[i].(string)
 		value := args[i+1]
 		if !ok1 {
-			continue
+			panic("AttrValueIs requires string keys")
 		}
 		m[key] = value
 	}
@@ -200,12 +203,15 @@ func AttrValueIs(args ...any) func(ctx context.Context, r slog.Record) bool {
 //
 //	A function that checks if the record has an attribute with the given key and type
 func AttrKindIs(args ...any) func(ctx context.Context, r slog.Record) bool {
+	if len(args)%2 != 0 {
+		panic("AttrKindIs requires key/kind pairs")
+	}
 	m := map[string]slog.Kind{}
 	for i := 0; i < len(args); i += 2 {
 		key, ok1 := args[i].(string)
 		ty, ok2 := args[i+1].(slog.Kind)
 		if !ok1 || !ok2 {
-			continue
+			panic("AttrKindIs requires string keys and slog.Kind values")
 		}
 		m[key] = ty
 	}

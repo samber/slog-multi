@@ -10,15 +10,10 @@ import (
 )
 
 func main() {
-	queryLogLevel := slog.LevelDebug
-	requestLogLevel := slog.LevelError
-	influxdbLogLevel := slog.LevelInfo
-	logLevel := slog.LevelError
-
-	queryChannel := slogslack.Option{Level: queryLogLevel, WebhookURL: "xxx", Channel: "db queries"}.NewSlackHandler()
-	requestChannel := slogslack.Option{Level: requestLogLevel, WebhookURL: "xxx", Channel: "service requests"}.NewSlackHandler()
-	influxdbChannel := slogslack.Option{Level: influxdbLogLevel, WebhookURL: "xxx", Channel: "influxdb metrics"}.NewSlackHandler()
-	fallbackChannel := slogslack.Option{Level: logLevel, WebhookURL: "xxx", Channel: "logs"}.NewSlackHandler()
+	queryChannel := slogslack.Option{Level: slog.LevelDebug, WebhookURL: "xxx", Channel: "db queries"}.NewSlackHandler()
+	requestChannel := slogslack.Option{Level: slog.LevelError, WebhookURL: "xxx", Channel: "service requests"}.NewSlackHandler()
+	influxdbChannel := slogslack.Option{Level: slog.LevelInfo, WebhookURL: "xxx", Channel: "influxdb metrics"}.NewSlackHandler()
+	fallbackChannel := slogslack.Option{Level: slog.LevelError, WebhookURL: "xxx", Channel: "logs"}.NewSlackHandler()
 
 	logger := slog.New(
 		slogmulti.Router().
@@ -30,7 +25,7 @@ func main() {
 			Handler(),
 	)
 
-	logger.Debug("Executing SQL query", "query", "SELECT * FROM users", "args", []int{1, 2, 3})
+	logger.Debug("Executing SQL query", "query", "SELECT * FROM users WHERE id = ?", "args", []int{1})
 	logger.Error("Incoming request failed", "method", "POST", "body", "{'name':'test'}")
 	logger.Error("An unexpected error occurred")
 

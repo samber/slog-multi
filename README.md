@@ -237,15 +237,10 @@ import (
 )
 
 func main() {
-    queryLogLevel := slog.LevelDebug
-    requestLogLevel := slog.LevelError
-    influxdbLogLevel := slog.LevelInfo
-    logLevel := slog.LevelError
-
-    queryChannel := slogslack.Option{Level: queryLogLevel, WebhookURL: "xxx", Channel: "db-queries"}.NewSlackHandler()
-    requestChannel := slogslack.Option{Level: requestLogLevel, WebhookURL: "xxx", Channel: "service-requests"}.NewSlackHandler()
-    influxdbChannel := slogslack.Option{Level: influxdbLogLevel, WebhookURL: "xxx", Channel: "influxdb-metrics"}.NewSlackHandler()
-    fallbackChannel := slogslack.Option{Level: logLevel, WebhookURL: "xxx", Channel: "logs"}.NewSlackHandler()
+    queryChannel := slogslack.Option{Level: slog.LevelDebug, WebhookURL: "xxx", Channel: "db-queries"}.NewSlackHandler()
+    requestChannel := slogslack.Option{Level: slog.LevelError, WebhookURL: "xxx", Channel: "service-requests"}.NewSlackHandler()
+    influxdbChannel := slogslack.Option{Level: slog.LevelInfo, WebhookURL: "xxx", Channel: "influxdb-metrics"}.NewSlackHandler()
+    fallbackChannel := slogslack.Option{Level: slog.LevelError, WebhookURL: "xxx", Channel: "logs"}.NewSlackHandler()
 
     logger := slog.New(
         slogmulti.Router().
@@ -258,7 +253,7 @@ func main() {
     )
 
     // Goes to queryChannel only (stops at first match)
-    logger.Debug("Executing SQL query", "query", "SELECT * FROM users", "args", []int{1, 2, 3})
+    logger.Debug("Executing SQL query", "query", "SELECT * FROM users WHERE id = ?", "args", []int{1})
 
     // Goes to requestChannel only (stops at first match)
     logger.Error("Incoming request failed", "method", "POST", "body", "{'name':'test'}")
@@ -267,14 +262,6 @@ func main() {
     logger.Error("An unexpected error occurred")
 }
 ```
-
-#### Comparison: Router vs FirstMatch
-
-| Behavior | `Router().Handler()` | `Router().FirstMatch().Handler()` |
-|----------|----------------------|-----------------------------------|
-| Matching strategy | Sends to **all** matching handlers | Sends to **first** matching handler only |
-| Performance | Higher overhead (evaluates all) | Lower overhead (stops at first match) |
-| Use case | Broadcast to multiple destinations | Priority-based exclusive routing |
 
 #### Built-in Predicates
 
@@ -290,34 +277,7 @@ func main() {
 
 **Attribute predicates:**
 - `AttrValueIs(key, value, ...)` - Check attributes have exact values
-  ```go
-  slogmulti.AttrValueIs("scope", "influx", "env", "production")
-  ```
 - `AttrKindIs(key, kind, ...)` - Check attributes have specific types
-  ```go
-  slogmulti.AttrKindIs("query", slog.KindString, "args", slog.KindAny)
-  ```
-
-**Custom predicates:**
-```go
-func customPredicate(ctx context.Context, r slog.Record) bool {
-    // Your custom logic here
-    return true
-}
-
-logger := slog.New(
-    slogmulti.Router().
-        Add(handler, customPredicate).
-        FirstMatch().
-        Handler(),
-)
-```
-
-**Use Cases:**
-- Database query logging (separate channel for SQL queries)
-- HTTP request routing (different channels for different endpoints)
-- Service-specific logging (dedicated channels per microservice)
-- Priority-based log routing (route by importance, not duplication)
 
 ### Failover: `slogmulti.Failover()`
 
