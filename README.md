@@ -15,6 +15,7 @@
 
 - **🔄 Fanout**: Distribute logs to multiple handlers in parallel
 - **🛣️ Router**: Conditionally route logs based on custom criteria
+- **🎯 First Match**: Route logs to the first matching handler only
 - **🔄 Failover**: High-availability logging with automatic fallback
 - **⚖️ Load Balancing**: Distribute load across multiple handlers
 - **🔗 Pipeline**: Transform and filter logs with middleware chains
@@ -223,6 +224,60 @@ func recordMatchRegion(region string) func(ctx context.Context, r slog.Record) b
 - Environment-specific logging (dev vs prod)
 - Level-based routing (errors to Slack, info to console)
 - Business logic routing (user actions vs system events)
+
+### First Match Routing: `Router().FirstMatch()`
+
+Route logs to the **first matching handler only**, unlike regular routing which sends to all matching handlers. Perfect for priority-based routing where you want exactly one handler to receive each log.
+
+```go
+import (
+    slogmulti "github.com/samber/slog-multi"
+    slogslack "github.com/samber/slog-slack"
+    "log/slog"
+)
+
+func main() {
+    queryChannel := slogslack.Option{Level: slog.LevelDebug, WebhookURL: "xxx", Channel: "db-queries"}.NewSlackHandler()
+    requestChannel := slogslack.Option{Level: slog.LevelError, WebhookURL: "xxx", Channel: "service-requests"}.NewSlackHandler()
+    influxdbChannel := slogslack.Option{Level: slog.LevelInfo, WebhookURL: "xxx", Channel: "influxdb-metrics"}.NewSlackHandler()
+    fallbackChannel := slogslack.Option{Level: slog.LevelError, WebhookURL: "xxx", Channel: "logs"}.NewSlackHandler()
+
+    logger := slog.New(
+        slogmulti.Router().
+            Add(queryChannel, slogmulti.AttrKindIs("query", slog.KindString, "args", slog.KindAny)).
+            Add(requestChannel, slogmulti.AttrKindIs("method", slog.KindString, "body", slog.KindAny)).
+            Add(influxdbChannel, slogmulti.AttrValueIs("scope", "influx")).
+            Add(fallbackChannel).  // Catch-all for everything else
+            FirstMatch().           // ← Enable first-match routing
+            Handler(),
+    )
+
+    // Goes to queryChannel only (stops at first match)
+    logger.Debug("Executing SQL query", "query", "SELECT * FROM users WHERE id = ?", "args", []int{1})
+
+    // Goes to requestChannel only (stops at first match)
+    logger.Error("Incoming request failed", "method", "POST", "body", "{'name':'test'}")
+
+    // Goes to fallbackChannel (no other handlers matched)
+    logger.Error("An unexpected error occurred")
+}
+```
+
+#### Built-in Predicates
+
+**Level predicates:**
+- `LevelIs(levels ...slog.Level)` - Match specific log levels
+- `LevelIsNot(levels ...slog.Level)` - Exclude specific log levels
+
+**Message predicates:**
+- `MessageIs(msg string)` - Exact message match
+- `MessageIsNot(msg string)` - Message doesn't match
+- `MessageContains(part string)` - Message contains substring
+- `MessageNotContains(part string)` - Message doesn't contain substring
+
+**Attribute predicates:**
+- `AttrValueIs(key, value, ...)` - Check attributes have exact values
+- `AttrKindIs(key, kind, ...)` - Check attributes have specific types
 
 ### Failover: `slogmulti.Failover()`
 

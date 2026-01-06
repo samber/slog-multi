@@ -2,15 +2,17 @@ package slogmulti
 
 import (
 	"context"
+	"fmt"
+	"log/slog"
 	"slices"
 
-	"log/slog"
-
+	"github.com/samber/lo"
 	slogcommon "github.com/samber/slog-common"
 )
 
 type router struct {
-	handlers []slog.Handler
+	handlers   []slog.Handler
+	firstMatch bool
 }
 
 // Router creates a new router instance for building conditional log routing.
@@ -28,7 +30,8 @@ type router struct {
 //	A new router instance ready for configuration
 func Router() *router {
 	return &router{
-		handlers: []slog.Handler{},
+		handlers:   []slog.Handler{},
+		firstMatch: false,
 	}
 }
 
@@ -48,12 +51,14 @@ func (h *router) Add(handler slog.Handler, predicates ...func(ctx context.Contex
 		handlers: append(
 			h.handlers,
 			&RoutableHandler{
-				predicates: predicates,
-				handler:    handler,
-				groups:     []string{},
-				attrs:      []slog.Attr{},
+				predicates:     predicates,
+				handler:        handler,
+				groups:         []string{},
+				attrs:          []slog.Attr{},
+				skipPredicates: false,
 			},
 		),
+		firstMatch: h.firstMatch,
 	}
 }
 
@@ -65,7 +70,24 @@ func (h *router) Add(handler slog.Handler, predicates ...func(ctx context.Contex
 //
 //	A slog.Handler that implements the routing logic
 func (h *router) Handler() slog.Handler {
-	return Fanout(h.handlers...)
+	if h.firstMatch {
+		return FirstMatch(lo.Map(h.handlers, func(h slog.Handler, _ int) *RoutableHandler {
+			rh, ok := h.(*RoutableHandler)
+			if !ok {
+				panic(fmt.Sprintf("expected *RoutableHandler, got %T", h))
+			}
+			return &(*rh)
+		})...)
+	} else {
+		return Fanout(h.handlers...)
+	}
+}
+
+func (h *router) FirstMatch() *router {
+	return &router{
+		handlers:   h.handlers,
+		firstMatch: true,
+	}
 }
 
 // Ensure RoutableHandler implements the slog.Handler interface at compile time
@@ -85,6 +107,8 @@ type RoutableHandler struct {
 	groups []string
 	// attrs contains accumulated attributes that should be added to records
 	attrs []slog.Attr
+	// skipPredicates indicates the caller MUST call isMatch(ctx, record) and MUST NOT invoke the handler for a given record if isMatch returns false.
+	skipPredicates bool
 }
 
 // Enabled checks if the underlying handler is enabled for the given log level.
@@ -114,6 +138,19 @@ func (h *RoutableHandler) Enabled(ctx context.Context, l slog.Level) bool {
 //
 //	An error if the underlying handler failed to process the record, nil otherwise
 func (h *RoutableHandler) Handle(ctx context.Context, r slog.Record) error {
+	if h.skipPredicates {
+		return h.handler.Handle(ctx, r)
+	} else {
+		_, ok := h.isMatch(ctx, r)
+		if ok {
+			return h.handler.Handle(ctx, r)
+		}
+	}
+
+	return nil
+}
+
+func (h *RoutableHandler) isMatch(ctx context.Context, r slog.Record) (slog.Record, bool) {
 	clone := slog.NewRecord(r.Time, r.Level, r.Message, r.PC)
 	clone.AddAttrs(
 		slogcommon.AppendRecordAttrsToAttrs(h.attrs, h.groups, &r)...,
@@ -121,11 +158,11 @@ func (h *RoutableHandler) Handle(ctx context.Context, r slog.Record) error {
 
 	for _, predicate := range h.predicates {
 		if !predicate(ctx, clone) {
-			return nil
+			return clone, false
 		}
 	}
 
-	return h.handler.Handle(ctx, r)
+	return clone, true
 }
 
 // WithAttrs creates a new RoutableHandler with additional attributes.
@@ -143,10 +180,11 @@ func (h *RoutableHandler) Handle(ctx context.Context, r slog.Record) error {
 //	A new RoutableHandler with the additional attributes
 func (h *RoutableHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	return &RoutableHandler{
-		predicates: h.predicates,
-		handler:    h.handler.WithAttrs(attrs),
-		groups:     slices.Clone(h.groups),
-		attrs:      slogcommon.AppendAttrsToGroup(h.groups, h.attrs, attrs...),
+		predicates:     h.predicates,
+		handler:        h.handler.WithAttrs(attrs),
+		groups:         slices.Clone(h.groups),
+		attrs:          slogcommon.AppendAttrsToGroup(h.groups, h.attrs, attrs...),
+		skipPredicates: h.skipPredicates,
 	}
 }
 
@@ -171,9 +209,10 @@ func (h *RoutableHandler) WithGroup(name string) slog.Handler {
 	}
 
 	return &RoutableHandler{
-		predicates: h.predicates,
-		handler:    h.handler.WithGroup(name),
-		groups:     append(slices.Clone(h.groups), name),
-		attrs:      h.attrs,
+		predicates:     h.predicates,
+		handler:        h.handler.WithGroup(name),
+		groups:         append(slices.Clone(h.groups), name),
+		attrs:          h.attrs,
+		skipPredicates: h.skipPredicates,
 	}
 }
