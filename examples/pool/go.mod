@@ -1,6 +1,6 @@
 module github.com/samber/slog-multi/examples/pool
 
-go 1.21
+go 1.22
 
 require github.com/samber/slog-multi v1.0.0
 

@@ -233,12 +233,6 @@ func TestStressFailoverConcurrent(t *testing.T) {
 func TestStressPoolConcurrent(t *testing.T) {
 	t.Parallel()
 
-	// KNOWN BUG: pool.go uses rand.Source without synchronization.
-	// Concurrent access causes data races and can panic with "index out of range".
-	// Skip when running with -race or -fuzz to avoid false failures.
-	// Run explicitly to reproduce: go test -run TestStressPoolConcurrent -count=1
-	t.Skip("skipped: PoolHandler has a known race condition on rand.Source (pool.go:102)")
-
 	handlers := make([]*countingHandler, 5)
 	slogHandlers := make([]slog.Handler, 5)
 	for i := range handlers {
