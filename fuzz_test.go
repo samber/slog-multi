@@ -162,13 +162,14 @@ func FuzzFirstMatchHandle(f *testing.F) {
 		level := slog.Level(levelInt)
 		total := errorSink.handleCount.Load() + infoSink.handleCount.Load() + catchAll.handleCount.Load()
 
-		if level == slog.LevelError {
+		switch level {
+		case slog.LevelError:
 			assert.Equal(t, int64(1), errorSink.handleCount.Load())
 			assert.Equal(t, int64(1), total)
-		} else if level == slog.LevelInfo {
+		case slog.LevelInfo:
 			assert.Equal(t, int64(1), infoSink.handleCount.Load())
 			assert.Equal(t, int64(1), total)
-		} else {
+		default:
 			// Catch-all gets it (no predicate, always matches)
 			assert.Equal(t, int64(1), catchAll.handleCount.Load())
 			assert.Equal(t, int64(1), total)
