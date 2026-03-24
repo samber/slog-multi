@@ -13,9 +13,9 @@ watch-bench:
 	reflex -t 50ms -s -- sh -c 'go test -benchmem -count 3 -bench ./...'
 
 fuzz:
-  go test -fuzz -fuzztime=10s ./...
+	go test -fuzz -fuzztime=10s ./...
 watch-fuzz:
-  reflex -t 50ms -s -- sh -c 'go test -fuzz -fuzztime=10s ./...'
+	reflex -t 50ms -s -- sh -c 'go test -fuzz -fuzztime=10s ./...'
 
 coverage:
 	go test -v -coverprofile=cover.out -covermode=atomic ./...
