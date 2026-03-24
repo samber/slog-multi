@@ -101,8 +101,9 @@ func BenchmarkFailoverHandle(b *testing.B) {
 		b.ReportAllocs()
 		handler := Failover()(noopHandler{}, noopHandler{}, noopHandler{})
 		ctx := context.Background()
+		r := benchRecord()
 		for i := 0; i < b.N; i++ {
-			_ = handler.Handle(ctx, benchRecord())
+			_ = handler.Handle(ctx, r)
 		}
 	})
 
@@ -110,8 +111,9 @@ func BenchmarkFailoverHandle(b *testing.B) {
 		b.ReportAllocs()
 		handler := Failover()(noopErrorHandler{err: errors.New("fail")}, noopHandler{}, noopHandler{})
 		ctx := context.Background()
+		r := benchRecord()
 		for i := 0; i < b.N; i++ {
-			_ = handler.Handle(ctx, benchRecord())
+			_ = handler.Handle(ctx, r)
 		}
 	})
 
@@ -120,8 +122,9 @@ func BenchmarkFailoverHandle(b *testing.B) {
 		e := noopErrorHandler{err: errors.New("fail")}
 		handler := Failover()(e, e, e)
 		ctx := context.Background()
+		r := benchRecord()
 		for i := 0; i < b.N; i++ {
-			_ = handler.Handle(ctx, benchRecord())
+			_ = handler.Handle(ctx, r)
 		}
 	})
 }
@@ -147,8 +150,9 @@ func BenchmarkPoolHandle(b *testing.B) {
 			b.ReportAllocs()
 			handler := Pool()(makeHandlers(n)...)
 			ctx := context.Background()
+			r := benchRecord()
 			for i := 0; i < b.N; i++ {
-				_ = handler.Handle(ctx, benchRecord())
+				_ = handler.Handle(ctx, r)
 			}
 		})
 	}
@@ -180,8 +184,9 @@ func BenchmarkRouterHandle(b *testing.B) {
 			r = r.Add(noopHandler{}) // catch-all
 			handler := r.Handler()
 			ctx := context.Background()
+			rec := benchRecord()
 			for i := 0; i < b.N; i++ {
-				_ = handler.Handle(ctx, benchRecord())
+				_ = handler.Handle(ctx, rec)
 			}
 		})
 	}
@@ -216,8 +221,9 @@ func BenchmarkFirstMatchHandle(b *testing.B) {
 			FirstMatch().
 			Handler()
 		ctx := context.Background()
+		r := benchRecord()
 		for i := 0; i < b.N; i++ {
-			_ = handler.Handle(ctx, benchRecord()) // LevelInfo matches first
+			_ = handler.Handle(ctx, r) // LevelInfo matches first
 		}
 	})
 
@@ -230,8 +236,9 @@ func BenchmarkFirstMatchHandle(b *testing.B) {
 			FirstMatch().
 			Handler()
 		ctx := context.Background()
+		r := benchRecord()
 		for i := 0; i < b.N; i++ {
-			_ = handler.Handle(ctx, benchRecord()) // LevelInfo matches last
+			_ = handler.Handle(ctx, r) // LevelInfo matches last
 		}
 	})
 
@@ -289,8 +296,9 @@ func BenchmarkPipeHandle(b *testing.B) {
 			}
 			handler := Pipe(middlewares...).Handler(noopHandler{})
 			ctx := context.Background()
+			r := benchRecord()
 			for i := 0; i < b.N; i++ {
-				_ = handler.Handle(ctx, benchRecord())
+				_ = handler.Handle(ctx, r)
 			}
 		})
 	}
@@ -318,8 +326,9 @@ func BenchmarkRecoveryHandle(b *testing.B) {
 		b.ReportAllocs()
 		handler := RecoverHandlerError(noopRecovery)(noopHandler{})
 		ctx := context.Background()
+		r := benchRecord()
 		for i := 0; i < b.N; i++ {
-			_ = handler.Handle(ctx, benchRecord())
+			_ = handler.Handle(ctx, r)
 		}
 	})
 
@@ -327,8 +336,9 @@ func BenchmarkRecoveryHandle(b *testing.B) {
 		b.ReportAllocs()
 		handler := RecoverHandlerError(noopRecovery)(noopErrorHandler{err: errors.New("fail")})
 		ctx := context.Background()
+		r := benchRecord()
 		for i := 0; i < b.N; i++ {
-			_ = handler.Handle(ctx, benchRecord())
+			_ = handler.Handle(ctx, r)
 		}
 	})
 
@@ -336,8 +346,9 @@ func BenchmarkRecoveryHandle(b *testing.B) {
 		b.ReportAllocs()
 		handler := RecoverHandlerError(noopRecovery)(&panickingHandler{panicValue: "boom"})
 		ctx := context.Background()
+		r := benchRecord()
 		for i := 0; i < b.N; i++ {
-			_ = handler.Handle(ctx, benchRecord())
+			_ = handler.Handle(ctx, r)
 		}
 	})
 }
@@ -353,8 +364,9 @@ func BenchmarkComposedFanoutOfFailover(b *testing.B) {
 		noopHandler{},
 	)
 	ctx := context.Background()
+	r := benchRecord()
 	for i := 0; i < b.N; i++ {
-		_ = handler.Handle(ctx, benchRecord())
+		_ = handler.Handle(ctx, r)
 	}
 }
 
@@ -367,8 +379,9 @@ func BenchmarkComposedPipeWithRouter(b *testing.B) {
 		Handler()
 	handler := Pipe(passthroughMiddleware()).Handler(router)
 	ctx := context.Background()
+	r := benchRecord()
 	for i := 0; i < b.N; i++ {
-		_ = handler.Handle(ctx, benchRecord())
+		_ = handler.Handle(ctx, r)
 	}
 }
 
@@ -380,8 +393,9 @@ func BenchmarkComposedDeepNesting(b *testing.B) {
 		handler = Fanout(handler, noopHandler{})
 	}
 	ctx := context.Background()
+	r := benchRecord()
 	for i := 0; i < b.N; i++ {
-		_ = handler.Handle(ctx, benchRecord())
+		_ = handler.Handle(ctx, r)
 	}
 }
 
