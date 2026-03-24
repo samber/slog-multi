@@ -94,18 +94,16 @@ func (h *PoolHandler) Handle(ctx context.Context, r slog.Record) error {
 		return nil
 	}
 
-	// round robin with randomization
+	// round robin with randomization, using index arithmetic to avoid slice allocation
 	start := rand.IntN(len(h.handlers))
-	handlers := make([]slog.Handler, len(h.handlers))
-	copy(handlers, h.handlers[start:])
-	copy(handlers[len(h.handlers)-start:], h.handlers[:start])
 
 	var err error
 
-	for i := range handlers {
-		if handlers[i].Enabled(ctx, r.Level) {
+	for j := range len(h.handlers) {
+		i := (start + j) % len(h.handlers)
+		if h.handlers[i].Enabled(ctx, r.Level) {
 			err = try(func() error {
-				return handlers[i].Handle(ctx, r.Clone())
+				return h.handlers[i].Handle(ctx, r.Clone())
 			})
 			if err == nil {
 				return nil

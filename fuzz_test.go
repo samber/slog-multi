@@ -222,8 +222,10 @@ func FuzzRecoveryHandle(f *testing.F) {
 			recoveryCount++
 		})
 
+		normalizedMode := ((mode % 4) + 4) % 4
+
 		var inner slog.Handler
-		switch mode % 4 {
+		switch normalizedMode {
 		case 0:
 			inner = &errorHandler{err: nil}
 		case 1:
@@ -238,7 +240,7 @@ func FuzzRecoveryHandle(f *testing.F) {
 		r := buildFuzzRecord(levelInt, msg, 0)
 		_ = handler.Handle(context.Background(), r)
 
-		if mode%4 == 0 {
+		if normalizedMode == 0 {
 			assert.Equal(t, 0, recoveryCount)
 		} else {
 			assert.Equal(t, 1, recoveryCount)

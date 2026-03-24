@@ -47,7 +47,7 @@ func (h *InlineHandler) Handle(ctx context.Context, record slog.Record) error {
 
 // Implements slog.Handler
 func (h *InlineHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
-	newAttrs := []slog.Attr{}
+	newAttrs := make([]slog.Attr, 0, len(h.attrs)+len(attrs))
 	newAttrs = append(newAttrs, h.attrs...)
 	newAttrs = append(newAttrs, attrs...)
 
@@ -66,7 +66,7 @@ func (h *InlineHandler) WithGroup(name string) slog.Handler {
 		return h
 	}
 
-	newGroups := []string{}
+	newGroups := make([]string, 0, len(h.groups)+1)
 	newGroups = append(newGroups, h.groups...)
 	newGroups = append(newGroups, name)
 	return &InlineHandler{

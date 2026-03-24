@@ -35,6 +35,10 @@ jobs:
     - name: Test
       run: make test
 
+    - name: Fuzz
+      run: make fuzz FUZZTIME=2s
+      if: matrix.go == '1.22'
+
     - name: Test
       run: make coverage
 
@@ -45,4 +49,4 @@ jobs:
         file: ./cover.out
         flags: unittests
         verbose: true
-      if: matrix.go == '1.21'
+      if: matrix.go == '1.22'
