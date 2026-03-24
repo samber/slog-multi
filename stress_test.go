@@ -73,6 +73,26 @@ func (h *panickingHandler) Handle(_ context.Context, _ slog.Record) error {
 func (h *panickingHandler) WithAttrs(_ []slog.Attr) slog.Handler { return h }
 func (h *panickingHandler) WithGroup(_ string) slog.Handler      { return h }
 
+// randomFailHandler fails on every Nth call (deterministic chaos).
+type randomFailHandler struct {
+	callCount atomic.Int64
+	failEvery int64
+	err       error
+}
+
+func (h *randomFailHandler) Enabled(_ context.Context, _ slog.Level) bool { return true }
+
+func (h *randomFailHandler) Handle(_ context.Context, _ slog.Record) error {
+	n := h.callCount.Add(1)
+	if n%h.failEvery == 0 {
+		return h.err
+	}
+	return nil
+}
+
+func (h *randomFailHandler) WithAttrs(_ []slog.Attr) slog.Handler { return h }
+func (h *randomFailHandler) WithGroup(_ string) slog.Handler      { return h }
+
 // ---------------------------------------------------------------------------
 // Edge case tests
 // ---------------------------------------------------------------------------
@@ -506,4 +526,239 @@ func TestStressMixedPanicsAndErrors(t *testing.T) {
 
 	expected := int64(stressGoroutines * stressLogsPerRoutine)
 	assert.Equal(t, expected, good.handleCount.Load())
+}
+
+// ---------------------------------------------------------------------------
+// Adversarial tests
+// ---------------------------------------------------------------------------
+
+func TestAdversarialRandomFailures(t *testing.T) {
+	t.Parallel()
+
+	failing := &randomFailHandler{failEvery: 3, err: errors.New("random fail")}
+	good := newCountingHandler(slog.LevelDebug)
+
+	t.Run("fanout_with_random_failures", func(t *testing.T) {
+		t.Parallel()
+		handler := Fanout(failing, good)
+		stressRun(t, handler, slog.LevelInfo)
+		expected := int64(stressGoroutines * stressLogsPerRoutine)
+		assert.Equal(t, expected, good.handleCount.Load(), "good handler must receive all records regardless of failures")
+	})
+
+	t.Run("failover_with_random_failures", func(t *testing.T) {
+		t.Parallel()
+		backup := newCountingHandler(slog.LevelDebug)
+		rf := &randomFailHandler{failEvery: 2, err: errors.New("fail")}
+		handler := Failover()(rf, backup)
+		stressRun(t, handler, slog.LevelInfo)
+		total := rf.callCount.Load() // primary was called for all
+		expected := int64(stressGoroutines * stressLogsPerRoutine)
+		assert.Equal(t, expected, total, "primary called for every record")
+		// backup should have been called for ~half (every 2nd fails)
+		assert.Greater(t, backup.handleCount.Load(), int64(0), "backup should receive some records")
+	})
+}
+
+func TestAdversarialDeepNesting(t *testing.T) {
+	t.Parallel()
+
+	sink := newCountingHandler(slog.LevelDebug)
+	// Fanout flattens nested FanoutHandlers, so each Fanout(prev, sink) adds one more ref.
+	// After 5 iterations: 1 + 5 = 6 refs to sink.
+	var handler slog.Handler = sink
+	for i := 0; i < 5; i++ {
+		handler = Fanout(handler, sink)
+	}
+
+	stressRun(t, handler, slog.LevelInfo)
+
+	expected := int64(stressGoroutines * stressLogsPerRoutine * 6)
+	assert.Equal(t, expected, sink.handleCount.Load())
+}
+
+func TestAdversarialConcurrentDeriveAndHandle(t *testing.T) {
+	t.Parallel()
+
+	sink := newCountingHandler(slog.LevelDebug)
+	base := Fanout(sink, sink)
+
+	var wg sync.WaitGroup
+	// Half goroutines continuously derive, half continuously Handle
+	wg.Add(stressGoroutines)
+	for g := 0; g < stressGoroutines; g++ {
+		go func(id int) {
+			defer wg.Done()
+			ctx := context.Background()
+			for i := 0; i < stressLogsPerRoutine; i++ {
+				switch i % 3 {
+				case 0:
+					derived := base.WithAttrs([]slog.Attr{slog.Int("id", id)})
+					r := slog.NewRecord(time.Now(), slog.LevelInfo, "derived", 0)
+					_ = derived.Handle(ctx, r)
+				case 1:
+					derived := base.WithGroup(fmt.Sprintf("g%d", id))
+					r := slog.NewRecord(time.Now(), slog.LevelInfo, "grouped", 0)
+					_ = derived.Handle(ctx, r)
+				default:
+					r := slog.NewRecord(time.Now(), slog.LevelInfo, "base", 0)
+					_ = base.Handle(ctx, r)
+				}
+			}
+		}(g)
+	}
+	wg.Wait()
+	// No assertion on count — the test passes if no race/panic occurs
+	assert.Greater(t, sink.handleCount.Load(), int64(0))
+}
+
+func TestAdversarialMixedPanicTypes(t *testing.T) {
+	t.Parallel()
+
+	panicValues := []any{
+		"string panic",
+		errors.New("error panic"),
+		42,
+		struct{ msg string }{"struct panic"},
+	}
+
+	for _, pv := range panicValues {
+		handler := Fanout(&panickingHandler{panicValue: pv}, newCountingHandler(slog.LevelDebug))
+		ctx := context.Background()
+
+		var wg sync.WaitGroup
+		wg.Add(50)
+		for g := 0; g < 50; g++ {
+			go func() {
+				defer wg.Done()
+				for i := 0; i < 100; i++ {
+					r := slog.NewRecord(time.Now(), slog.LevelInfo, "test", 0)
+					err := handler.Handle(ctx, r)
+					assert.Error(t, err)
+				}
+			}()
+		}
+		wg.Wait()
+	}
+}
+
+func TestAdversarialPoolDistribution(t *testing.T) {
+	t.Parallel()
+
+	const numHandlers = 10
+	handlers := make([]*countingHandler, numHandlers)
+	slogHandlers := make([]slog.Handler, numHandlers)
+	for i := range handlers {
+		handlers[i] = newCountingHandler(slog.LevelDebug)
+		slogHandlers[i] = handlers[i]
+	}
+	pool := Pool()(slogHandlers...)
+
+	const goroutines = 200
+	const logsPerRoutine = 500
+	var wg sync.WaitGroup
+	wg.Add(goroutines)
+	for g := 0; g < goroutines; g++ {
+		go func() {
+			defer wg.Done()
+			ctx := context.Background()
+			for i := 0; i < logsPerRoutine; i++ {
+				r := slog.NewRecord(time.Now(), slog.LevelInfo, "test", 0)
+				_ = pool.Handle(ctx, r)
+			}
+		}()
+	}
+	wg.Wait()
+
+	total := int64(goroutines * logsPerRoutine)
+	var sum int64
+	for _, h := range handlers {
+		count := h.handleCount.Load()
+		sum += count
+		// Each handler should get at least 1% of records (probabilistic but safe with 100k records)
+		minExpected := total / 100
+		assert.Greater(t, count, minExpected,
+			"handler should get >1%% of records, got %d/%d", count, total)
+	}
+	assert.Equal(t, total, sum, "total records across all handlers")
+}
+
+func TestAdversarialRouterManyPredicates(t *testing.T) {
+	t.Parallel()
+
+	sink := newCountingHandler(slog.LevelDebug)
+	r := Router()
+	// 20 handlers with non-matching predicates
+	for i := 0; i < 20; i++ {
+		r = r.Add(newCountingHandler(slog.LevelDebug), MessageIs(fmt.Sprintf("match-%d", i)))
+	}
+	// catch-all
+	r = r.Add(sink)
+	handler := r.Handler()
+
+	stressRun(t, handler, slog.LevelInfo)
+
+	// All records have msg "msg-X-Y" which won't match "match-N", so catch-all gets everything
+	expected := int64(stressGoroutines * stressLogsPerRoutine)
+	assert.Equal(t, expected, sink.handleCount.Load())
+}
+
+func TestAdversarialRecoveryConcurrentPanicTypes(t *testing.T) {
+	t.Parallel()
+
+	var recoveryCount atomic.Int64
+	recovery := RecoverHandlerError(func(_ context.Context, _ slog.Record, _ error) {
+		recoveryCount.Add(1)
+	})
+
+	panicValues := []any{"string", errors.New("error"), 123, 3.14}
+
+	var wg sync.WaitGroup
+	wg.Add(len(panicValues) * 50)
+	for _, pv := range panicValues {
+		handler := recovery(&panickingHandler{panicValue: pv})
+		for g := 0; g < 50; g++ {
+			go func(h slog.Handler) {
+				defer wg.Done()
+				ctx := context.Background()
+				for i := 0; i < 200; i++ {
+					r := slog.NewRecord(time.Now(), slog.LevelInfo, "test", 0)
+					_ = h.Handle(ctx, r)
+				}
+			}(handler)
+		}
+	}
+	wg.Wait()
+
+	expected := int64(len(panicValues) * 50 * 200)
+	assert.Equal(t, expected, recoveryCount.Load())
+}
+
+func TestAdversarialHighContention(t *testing.T) {
+	t.Parallel()
+
+	// Single handler, maximum goroutines — stress the clone path
+	sink := newCountingHandler(slog.LevelDebug)
+	handler := Fanout(sink, sink) // 2 copies to force clone
+
+	const goroutines = 1000
+	const logsPerRoutine = 1000
+	var wg sync.WaitGroup
+	wg.Add(goroutines)
+	for g := 0; g < goroutines; g++ {
+		go func(id int) {
+			defer wg.Done()
+			ctx := context.Background()
+			for i := 0; i < logsPerRoutine; i++ {
+				r := slog.NewRecord(time.Now(), slog.LevelInfo, "contention", 0)
+				r.AddAttrs(slog.Int("id", id), slog.Int("i", i))
+				_ = handler.Handle(ctx, r)
+			}
+		}(g)
+	}
+	wg.Wait()
+
+	// Each record goes to both copies of sink
+	expected := int64(goroutines * logsPerRoutine * 2)
+	assert.Equal(t, expected, sink.handleCount.Load())
 }

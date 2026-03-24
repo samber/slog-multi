@@ -177,6 +177,121 @@ func FuzzFirstMatchHandle(f *testing.F) {
 	})
 }
 
+func FuzzPipeHandle(f *testing.F) {
+	f.Add(0, "hello", 2)
+	f.Add(4, "", 0)
+	f.Add(8, "error", 5)
+	f.Add(-4, "debug msg", 1)
+
+	f.Fuzz(func(t *testing.T, levelInt int, msg string, numMiddlewares int) {
+		if numMiddlewares < 0 {
+			numMiddlewares = 0
+		}
+		if numMiddlewares > 10 {
+			numMiddlewares = 10
+		}
+
+		sink := &errorHandler{err: nil}
+		middlewares := make([]Middleware, numMiddlewares)
+		for i := range middlewares {
+			middlewares[i] = NewHandleInlineMiddleware(
+				func(ctx context.Context, record slog.Record, next func(context.Context, slog.Record) error) error {
+					return next(ctx, record)
+				},
+			)
+		}
+
+		handler := Pipe(middlewares...).Handler(sink)
+		r := buildFuzzRecord(levelInt, msg, 0)
+		err := handler.Handle(context.Background(), r)
+		assert.NoError(t, err)
+		assert.Equal(t, int64(1), sink.handleCount.Load())
+	})
+}
+
+func FuzzRecoveryHandle(f *testing.F) {
+	// mode: 0=no error, 1=error, 2=panic string, 3=panic error
+	f.Add(0, "ok", 0)
+	f.Add(0, "fail", 1)
+	f.Add(0, "panic-str", 2)
+	f.Add(0, "panic-err", 3)
+
+	f.Fuzz(func(t *testing.T, levelInt int, msg string, mode int) {
+		var recoveryCount int
+		recovery := RecoverHandlerError(func(_ context.Context, _ slog.Record, _ error) {
+			recoveryCount++
+		})
+
+		var inner slog.Handler
+		switch mode % 4 {
+		case 0:
+			inner = &errorHandler{err: nil}
+		case 1:
+			inner = &errorHandler{err: errors.New("fail")}
+		case 2:
+			inner = &panickingHandler{panicValue: "boom"}
+		case 3:
+			inner = &panickingHandler{panicValue: errors.New("panic-err")}
+		}
+
+		handler := recovery(inner)
+		r := buildFuzzRecord(levelInt, msg, 0)
+		_ = handler.Handle(context.Background(), r)
+
+		if mode%4 == 0 {
+			assert.Equal(t, 0, recoveryCount)
+		} else {
+			assert.Equal(t, 1, recoveryCount)
+		}
+	})
+}
+
+func FuzzAttrValueIs(f *testing.F) {
+	f.Add("key", "value")
+	f.Add("", "")
+	f.Add("special!@#$", "with spaces")
+	f.Add("emoji", "\xf0\x9f\x98\x80")
+
+	f.Fuzz(func(t *testing.T, key string, value string) {
+		r := slog.NewRecord(time.Now(), slog.LevelInfo, "test", 0)
+		r.AddAttrs(slog.String(key, value))
+		ctx := context.Background()
+
+		pred := AttrValueIs(key, value)
+		assert.True(t, pred(ctx, r))
+
+		predWrong := AttrValueIs(key, value+"x")
+		assert.False(t, predWrong(ctx, r))
+	})
+}
+
+func FuzzRouterWithAttrs(f *testing.F) {
+	f.Add(0, "test", "scope", "db")
+	f.Add(4, "warn", "env", "prod")
+	f.Add(-4, "", "key", "")
+
+	f.Fuzz(func(t *testing.T, levelInt int, msg string, attrKey string, attrVal string) {
+		matchSink := &errorHandler{err: nil}
+		fallbackSink := &errorHandler{err: nil}
+
+		handler := Router().
+			Add(matchSink, AttrValueIs(attrKey, attrVal)).
+			Add(fallbackSink).
+			FirstMatch().
+			Handler()
+
+		// Create a logger with attrs and log
+		logger := slog.New(handler).With(attrKey, attrVal)
+		logger.Log(context.Background(), slog.Level(levelInt), msg)
+
+		// The match handler should get the record (attrs match via With)
+		if slog.Level(levelInt) >= slog.LevelInfo {
+			assert.Equal(t, int64(1), matchSink.handleCount.Load(), "match sink should receive record")
+			assert.Equal(t, int64(0), fallbackSink.handleCount.Load(), "fallback should not receive record")
+		}
+	})
+}
+
 func FuzzRouterPredicates(f *testing.F) {
 	f.Add("hello world", 0)
 	f.Add("", -4)
