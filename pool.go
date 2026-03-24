@@ -2,8 +2,7 @@ package slogmulti
 
 import (
 	"context"
-	"math/rand"
-	"time"
+	"math/rand/v2"
 
 	"log/slog"
 
@@ -17,8 +16,6 @@ var _ slog.Handler = (*PoolHandler)(nil)
 // It distributes log records across multiple handlers using a round-robin approach
 // with randomization to ensure even distribution and prevent hot-spotting.
 type PoolHandler struct {
-	// randSource provides a thread-safe random number generator for load balancing
-	randSource rand.Source
 	// handlers contains the list of slog.Handler instances to distribute records across
 	handlers []slog.Handler
 }
@@ -48,8 +45,7 @@ type PoolHandler struct {
 func Pool() func(...slog.Handler) slog.Handler {
 	return func(handlers ...slog.Handler) slog.Handler {
 		return &PoolHandler{
-			randSource: rand.NewSource(time.Now().UnixNano()),
-			handlers:   handlers,
+			handlers: handlers,
 		}
 	}
 }
@@ -99,8 +95,10 @@ func (h *PoolHandler) Handle(ctx context.Context, r slog.Record) error {
 	}
 
 	// round robin with randomization
-	rand := h.randSource.Int63() % int64(len(h.handlers))
-	handlers := append(h.handlers[rand:], h.handlers[:rand]...)
+	start := rand.IntN(len(h.handlers))
+	handlers := make([]slog.Handler, len(h.handlers))
+	copy(handlers, h.handlers[start:])
+	copy(handlers[len(h.handlers)-start:], h.handlers[:start])
 
 	var err error
 

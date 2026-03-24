@@ -76,7 +76,7 @@ func (h *router) Handler() slog.Handler {
 			if !ok {
 				panic(fmt.Sprintf("expected *RoutableHandler, got %T", h))
 			}
-			return &(*rh)
+			return rh
 		})...)
 	} else {
 		return Fanout(h.handlers...)
