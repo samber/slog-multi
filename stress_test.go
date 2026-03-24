@@ -147,12 +147,6 @@ const (
 	stressLogsPerRoutine  = 1000
 )
 
-func makeRecord(id, i int) slog.Record {
-	r := slog.NewRecord(time.Now(), slog.LevelInfo, fmt.Sprintf("msg-%d-%d", id, i), 0)
-	r.AddAttrs(slog.Int("g", id), slog.Int("i", i))
-	return r
-}
-
 func stressRun(t *testing.T, handler slog.Handler, level slog.Level) {
 	t.Helper()
 	var wg sync.WaitGroup
