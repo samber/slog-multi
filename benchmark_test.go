@@ -52,8 +52,9 @@ func BenchmarkFanoutHandle(b *testing.B) {
 			b.ReportAllocs()
 			handler := Fanout(makeHandlers(n)...)
 			ctx := context.Background()
+			r := benchRecord()
 			for i := 0; i < b.N; i++ {
-				_ = handler.Handle(ctx, benchRecord())
+				_ = handler.Handle(ctx, r)
 			}
 		})
 	}

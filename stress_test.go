@@ -627,6 +627,7 @@ func TestAdversarialMixedPanicTypes(t *testing.T) {
 		ctx := context.Background()
 
 		var wg sync.WaitGroup
+		var errCount atomic.Int64
 		wg.Add(50)
 		for g := 0; g < 50; g++ {
 			go func() {
@@ -634,11 +635,14 @@ func TestAdversarialMixedPanicTypes(t *testing.T) {
 				for i := 0; i < 100; i++ {
 					r := slog.NewRecord(time.Now(), slog.LevelInfo, "test", 0)
 					err := handler.Handle(ctx, r)
-					assert.Error(t, err)
+					if err != nil {
+						errCount.Add(1)
+					}
 				}
 			}()
 		}
 		wg.Wait()
+		assert.Equal(t, int64(50*100), errCount.Load())
 	}
 }
 
