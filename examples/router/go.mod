@@ -8,7 +8,7 @@ require (
 )
 
 require (
-	github.com/gorilla/websocket v1.4.2 // indirect
+	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/samber/lo v1.53.0 // indirect
 	github.com/samber/slog-common v0.22.0 // indirect
 	github.com/slack-go/slack v0.12.1 // indirect
