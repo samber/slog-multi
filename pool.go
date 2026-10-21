@@ -3,6 +3,7 @@ package slogmulti
 import (
 	"context"
 	"math/rand/v2"
+	"slices"
 
 	"log/slog"
 
@@ -130,7 +131,7 @@ func (h *PoolHandler) Handle(ctx context.Context, r slog.Record) error {
 //	A new PoolHandler with the attributes added to all child handlers
 func (h *PoolHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	handers := lo.Map(h.handlers, func(h slog.Handler, _ int) slog.Handler {
-		return h.WithAttrs(attrs)
+		return h.WithAttrs(slices.Clone(attrs))
 	})
 	return Pool()(handers...)
 }
