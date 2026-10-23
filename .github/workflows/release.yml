@@ -10,6 +10,9 @@ on:
 
 jobs:
   release:
+    # tag push and GitHub release creation need write access to repo contents
+    permissions:
+      contents: write
     if: github.triggering_actor == 'samber'
     runs-on: ubuntu-latest
     steps:
