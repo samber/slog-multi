@@ -1,6 +1,6 @@
 module github.com/samber/slog-multi/examples/fanout
 
-go 1.22
+go 1.25
 
 require github.com/samber/slog-multi v1.0.0
 

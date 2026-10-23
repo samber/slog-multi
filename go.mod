@@ -1,6 +1,6 @@
 module github.com/samber/slog-multi
 
-go 1.22
+go 1.25
 
 require (
 	github.com/samber/lo v1.53.0
