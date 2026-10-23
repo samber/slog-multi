@@ -2,6 +2,7 @@ package slogmulti
 
 import (
 	"context"
+	"slices"
 
 	"log/slog"
 
@@ -118,7 +119,7 @@ func (h *FailoverHandler) Handle(ctx context.Context, r slog.Record) error {
 //	A new FailoverHandler with the attributes added to all child handlers
 func (h *FailoverHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	handers := lo.Map(h.handlers, func(h slog.Handler, _ int) slog.Handler {
-		return h.WithAttrs(attrs)
+		return h.WithAttrs(slices.Clone(attrs))
 	})
 	return Failover()(handers...)
 }
