@@ -10,7 +10,7 @@ import (
 func NewInlineHandler(
 	enabledFunc func(ctx context.Context, groups []string, attrs []slog.Attr, level slog.Level) bool,
 	handleFunc func(ctx context.Context, groups []string, attrs []slog.Attr, record slog.Record) error,
-) slog.Handler {
+) *InlineHandler {
 	if enabledFunc == nil {
 		panic("slog-multi: enabledFunc is required")
 	}

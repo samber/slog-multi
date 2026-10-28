@@ -7,7 +7,7 @@ import (
 )
 
 // NewHandleInlineHandler is a shortcut to a middleware that implements only the `Handle` method.
-func NewHandleInlineHandler(handleFunc func(ctx context.Context, groups []string, attrs []slog.Attr, record slog.Record) error) slog.Handler {
+func NewHandleInlineHandler(handleFunc func(ctx context.Context, groups []string, attrs []slog.Attr, record slog.Record) error) *HandleInlineHandler {
 	return &HandleInlineHandler{
 		groups:     []string{},
 		attrs:      []slog.Attr{},

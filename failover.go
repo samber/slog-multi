@@ -39,8 +39,8 @@ type FailoverHandler struct {
 // Returns:
 //
 //	A function that creates FailoverHandler instances with the provided handlers
-func Failover() func(...slog.Handler) slog.Handler {
-	return func(handlers ...slog.Handler) slog.Handler {
+func Failover() func(...slog.Handler) *FailoverHandler {
+	return func(handlers ...slog.Handler) *FailoverHandler {
 		return &FailoverHandler{
 			handlers: handlers,
 		}

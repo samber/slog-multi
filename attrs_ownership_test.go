@@ -12,8 +12,8 @@ import (
 func TestWithAttrsIsolatesChildHandlers(t *testing.T) {
 	factories := map[string]func(...slog.Handler) slog.Handler{
 		"fanout":   slogmulti.Fanout,
-		"failover": slogmulti.Failover(),
-		"pool":     slogmulti.Pool(),
+		"failover": func(hs ...slog.Handler) slog.Handler { return slogmulti.Failover()(hs...) },
+		"pool":     func(hs ...slog.Handler) slog.Handler { return slogmulti.Pool()(hs...) },
 	}
 	for name, factory := range factories {
 		t.Run(name, func(t *testing.T) {

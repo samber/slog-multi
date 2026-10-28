@@ -49,8 +49,8 @@ type HandlerErrorRecovery struct {
 // Returns:
 //
 //	A function that wraps handlers with recovery logic
-func RecoverHandlerError(recovery RecoveryFunc) func(slog.Handler) slog.Handler {
-	return func(handler slog.Handler) slog.Handler {
+func RecoverHandlerError(recovery RecoveryFunc) func(slog.Handler) *HandlerErrorRecovery {
+	return func(handler slog.Handler) *HandlerErrorRecovery {
 		return &HandlerErrorRecovery{
 			recovery: recovery,
 			handler:  handler,

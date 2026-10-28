@@ -43,8 +43,8 @@ type PoolHandler struct {
 // Returns:
 //
 //	A function that creates PoolHandler instances with the provided handlers
-func Pool() func(...slog.Handler) slog.Handler {
-	return func(handlers ...slog.Handler) slog.Handler {
+func Pool() func(...slog.Handler) *PoolHandler {
+	return func(handlers ...slog.Handler) *PoolHandler {
 		return &PoolHandler{
 			handlers: handlers,
 		}
