@@ -136,7 +136,7 @@ func TestEdgeSingleHandlerFanout(t *testing.T) {
 	t.Parallel()
 	h := slog.NewJSONHandler(io.Discard, nil)
 	result := Fanout(h)
-	assert.Same(t, h, result)
+	assert.Equal(t, []slog.Handler{h}, result.handlers)
 }
 
 func TestEdgeWithGroupEmpty(t *testing.T) {
