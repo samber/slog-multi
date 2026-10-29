@@ -181,7 +181,7 @@ func (h *RoutableHandler) isMatch(ctx context.Context, r slog.Record) (slog.Reco
 func (h *RoutableHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	return &RoutableHandler{
 		predicates:     h.predicates,
-		handler:        h.handler.WithAttrs(attrs),
+		handler:        h.handler.WithAttrs(slices.Clone(attrs)),
 		groups:         slices.Clone(h.groups),
 		attrs:          slogcommon.AppendAttrsToGroup(h.groups, h.attrs, attrs...),
 		skipPredicates: h.skipPredicates,
