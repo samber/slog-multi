@@ -2,6 +2,7 @@ package slogmulti
 
 import (
 	"log/slog"
+	"slices"
 )
 
 // PipeBuilder provides a fluent API for building middleware chains.
@@ -37,7 +38,7 @@ type PipeBuilder struct {
 //
 //	A new PipeBuilder instance ready for further configuration
 func Pipe(middlewares ...Middleware) *PipeBuilder {
-	return &PipeBuilder{middlewares: middlewares}
+	return &PipeBuilder{middlewares: slices.Clone(middlewares)}
 }
 
 // Pipe adds an additional middleware to the chain.
@@ -69,10 +70,8 @@ func (h *PipeBuilder) Pipe(middleware Middleware) *PipeBuilder {
 //
 //	A slog.Handler that applies all middleware transformations before forwarding to the final handler
 func (h *PipeBuilder) Handler(handler slog.Handler) slog.Handler {
-	for len(h.middlewares) > 0 {
-		middleware := h.middlewares[len(h.middlewares)-1]
-		h.middlewares = h.middlewares[0 : len(h.middlewares)-1]
-		handler = middleware(handler)
+	for i := len(h.middlewares) - 1; i >= 0; i-- {
+		handler = h.middlewares[i](handler)
 	}
 
 	return handler
